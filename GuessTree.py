@@ -11,105 +11,84 @@ from __future__ import annotations
 from typing import Any, Optional
 import pandas as pd
 import numpy as np
-import re
+import data
 
 from python_ta.contracts import check_contracts
 
-df = pd.DataFrame({
-    # hairstyle
-    'hair_partition': [0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0],
-    'curly_hair': [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
-    'hat': [0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    'bald': [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
-    'long_hair': [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    # hair color
-    'ginger_hair': [0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    'white_hair': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0],
-    'brown_hair': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0],
-    'blond_hair': [0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    'black_hair': [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
-    # facial attributes
-    'big_mouth': [1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0],
-    'big_nose': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0],
-    'red_cheeks': [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0],
-    'blue_eyes': [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1],
-    'sad_looking': [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    # facial hair
-    'facial_hair': [1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0],
-    'moustache': [1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-    'beard': [0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
-    # other
-    'glasses': [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
-    'earrings': [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    'female': [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    # names
-    'name': ['alex', 'alfred', 'anita', 'anne', 'bernard', 'bill', 'charles', 'claire',
-             'david', 'eric', 'frans', 'george', 'herman', 'joe', 'maria', 'max', 'paul',
-             'peter', 'philip', 'richard', 'robert', 'sam', 'susan', 'tom']
-})
 
-column_description = {
-    "hair_partition": "Does your character have a visible hair partition?",
-    "curly_hair": "Does your character have curly hair?",
-    "hat": "Does your character wear a hat?",
-    "bald": "Is your character bald?",
-    "long_hair": "Does your character have long hair?",
-    "ginger_hair": "Does your character have ginger hair?",
-    "white_hair": "Does your character have white hair?",
-    "brown_hair": "Does your character have brown hair?",
-    "blond_hair": "Does your character have blond hair?",
-    "black_hair": "Does your character have black hair?",
-    "big_mouth": "Does your character have a big mouth?",
-    "big_nose": "Does your character have a big nose?",
-    "red_cheeks": "Does your character have red cheeks?",
-    "blue_eyes": "Does your character have blue eyes?",
-    "sad_looking": "Does your character look sad?",
-    "facial_hair": "Does your character have facial hair?",
-    "moustache": "Does your character have a moustache?",
-    "beard": "Does your character have a beard?",
-    "glasses": "Does your character wear glasses?",
-    "earrings": "Does your character wear earrings?",
-    "female": "Is your character female?"
-}
-
-
-@check_contracts
+# @check_contracts
 class GuessTree:
     """A binary tree class that stores the decision tree for a given dataset and algorithm.
 
         Representation Invariants:
-          - (self._root is None) == (self._left is None)
-          - (self._root is None) == (self._right is None)
-          - If self._root is not None, then self._left and self._right are GuessTrees.
+            - (self.type == 'leaf') == (self.left is None)
+            - (self.type == 'leaf') == (self.right is None)
+            - (self.type == 'decision') == (self.value is None)
+            - (self.type == 'decision') == (self.algorithm is not None)
+            - (self.type == 'decision') == (self.feature_index is not None)
+            - (self.type == 'decision') == (self.threshold is not None)
+            - (self.type == 'decision') == (self.info_gain is not None)
+            - self.info_gain is None or 0<= self.info_gain <= 1
 
-        """
-    # Private Instance Attributes:
-    #   - _root:
-    #       The item stored at the root of this tree, or None if this tree is empty.
-    #   - _left:
-    #       The left subtree, or None if this tree is empty.
-    #   - _right:
-    #       The right subtree, or None if this tree is empty.
-    root: Optional[Any]
+
+        Instance Attributes:
+            - node_type:
+                The type of this node. Either 'leaf' or 'decision'.
+            - left:
+              The left subtree, or None if this tree is empty.
+            - right:
+              The right subtree, or None if this tree is empty.
+            - algorithm:
+                The algorithm used to build this tree.
+            - feature_index:
+                The index of the feature used to split this node.
+            - threshold:
+                 The threshold used to split this node.
+            - info_gain:
+                The information gain of this node.
+            - value:
+                The value of this node. Only used for leaf nodes.
+          """
+    node_type: str
     left: Optional[GuessTree]
     right: Optional[GuessTree]
-    algorithm: str
+    algorithm: Optional[str]
 
-    def __init__(self, root: Optional[Any], algorithm: str = 'CART') -> None:
-        """Initialize a new GuessTree containing only the given root value.
+    # for decision node
+    feature_index: Optional[int]
+    threshold: Optional[float]
+    info_gain: Optional[float]
 
-        If <root> is None, initialize an empty tree.
+    # for leaf node
+    value: Optional[Any]
+
+    def __init__(self, feature_index: Optional[int] = None, threshold: Optional[float] = None,
+                 info_gain: Optional[float] = None, value: Optional[float] = None,
+                 node_type: str = 'decision', algorithm: str = 'CART') -> None:
+        """Initializes a new GuessTree.
+
+
+        Preconditions:
+            - node_type in {'decision', 'leaf'}
+            - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'Multivariate'}
         """
-        self.algorithm = algorithm
-
-        if root is None:
-            self.root = None
+        if node_type == 'leaf':
             self.left = None
             self.right = None
         else:
-            self.root = root
             self.left = GuessTree(None)
             self.right = GuessTree(None)
+
+        self.algorithm = algorithm
+        self.node_type = node_type
+
+        # for decision node
+        self.feature_index = feature_index
+        self.threshold = threshold
+        self.info_gain = info_gain
+
+        # for leaf node
+        self.value = value
 
     def __str__(self) -> str:
         """Return a string representation of this BST.
@@ -127,9 +106,22 @@ class GuessTree:
         Preconditions:
             - depth >= 0
         """
-        if self.is_empty():
-            return ''
-        else:
-            return (depth * '  ' + f'{self._root}\n'
+
+        if self.node_type == 'decision':
+            return (depth * '  ' + f'{self.threshold}\n'
                     + self.left.str_indented(depth + 1)
                     + self.right.str_indented(depth + 1))
+        else:
+            return depth * '  ' + f'{self.value}\n'
+
+
+if __name__ == '__main__':
+    pass
+    # import python_ta
+    #
+    # python_ta.check_all(config={
+    #     'extra-imports': ['pandas', 'numpy', 'python_ta.contracts', 'typing', 'doctest'],
+    #     'allowed-io': [],
+    #     'max-line-length': 100,
+    #     'disable': ['R1705', 'C0200', 'R0913', 'W0622', 'R0902']
+    # })
