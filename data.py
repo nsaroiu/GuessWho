@@ -48,6 +48,9 @@ DATASET = pd.DataFrame({
              'peter', 'philip', 'richard', 'robert', 'sam', 'susan', 'tom']
 })
 
+# features to use for the dataset
+features = np.array([feature for feature in DATASET.columns if feature != 'name'])
+
 # column description for the dataset
 column_description = {
     "hair_partition": "Does your character have a visible hair partition?",
