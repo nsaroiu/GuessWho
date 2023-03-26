@@ -16,7 +16,7 @@ import data
 from python_ta.contracts import check_contracts
 
 
-# @check_contracts
+@check_contracts
 class GuessTree:
     """A binary tree class that stores the decision tree for a given dataset and algorithm.
 
@@ -31,22 +31,14 @@ class GuessTree:
 
 
         Instance Attributes:
-            - node_type:
-                The type of this node. Either 'leaf' or 'decision'.
-            - left:
-              The left subtree, or None if this tree is empty.
-            - right:
-              The right subtree, or None if this tree is empty.
-            - algorithm:
-                The algorithm used to build this tree.
-            - feature_ind:
-                The index of the feature used to split this node.
-            - threshold:
-                 The threshold used to split this node.
-            - info_gain:
-                The information gain of this node.
-            - value:
-                The value of this node. Only used for leaf nodes.
+            - node_type: The type of this node. Either 'leaf' or 'decision'.
+            - left: The left subtree, or None if this tree is empty.
+            - right: The right subtree, or None if this tree is empty.
+            - algorithm: The algorithm used to build this tree.
+            - feature_ind: The index of the feature used to split this node.
+            - threshold: The threshold used to split this node.
+            - info_gain: The information gain of this node.
+            - value: The value of this node. Only used for leaf nodes.
           """
     node_type: str
     left: Optional[GuessTree]
@@ -115,6 +107,7 @@ class GuessTree:
             return depth * '  ' + f'{self.value}\n'
 
 
+# @check_contracts
 class DecisionTreeGenerator:
     """
     A class that generates a decision tree based on the algorithm specified.
@@ -125,21 +118,18 @@ class DecisionTreeGenerator:
         - gTree is a GuessTree object
 
     Instance Attributes:
-        - gTree:
-            The GuessTree object that stores the decision tree.
-        - min_splits:
-            The minimum number of splits required to build the tree.
-        - max_depth:
-            The maximum depth of the tree.
+        - gTree: The GuessTree object that stores the decision tree.
+        - min_splits: The minimum number of splits required to build the tree.
+        - max_depth: The maximum depth of the tree.
     """
 
     gTree: Optional[GuessTree]
     min_splits: int
     max_depth: int
 
-    def __int__(self, mins_splits: int = 2, max_depth: int = 6) -> None:
+    def __init__(self, min_splits: Optional[int] = 2, max_depth: Optional[int] = 6) -> None:
         """Initializes a new DecisionTreeGenerator."""
-        self.min_splits = mins_splits
+        self.min_splits = min_splits
         self.max_depth = max_depth
 
     def build_tree(self, dataset: np.ndarray, algorithm: str = 'CART', curr_depth: int = 0) -> GuessTree:
@@ -154,18 +144,18 @@ class DecisionTreeGenerator:
         num_samples, num_features = np.shape(x)
 
         if num_samples >= self.min_splits and curr_depth < self.max_depth:
-            best_split = self.get_best_split(dataset, num_samples, num_features, algorithm)
+            best_split = self.get_best_split(dataset, num_features, algorithm)
             if best_split:
-                left_subtree = self.build_tree(best_split['left'], algorithm, curr_depth + 1)
-                right_subtree = self.build_tree(best_split['right'], algorithm, curr_depth + 1)
+                left_subtree = self.build_tree(best_split['left_data'], algorithm, curr_depth + 1)
+                right_subtree = self.build_tree(best_split['right_data'], algorithm, curr_depth + 1)
                 return GuessTree(left_subtree, right_subtree, best_split['feature_ind'], best_split['threshold'],
                                  best_split['info_gain'], node_type='decision',
                                  algorithm=algorithm)
-        leaf_value = self.calculate_leaf_value(y)
-        self.gTree = GuessTree(value=leaf_value, node_type='leaf')
-        return self.gTree
 
-    def get_best_split(self, dataset: np.ndarray, num_samples: int, num_features: int, algorithm: str = 'CART') -> dict:
+        leaf_value = self.calculate_leaf_value(y)
+        return GuessTree(value=leaf_value, node_type='leaf')
+
+    def get_best_split(self, dataset: np.ndarray, num_features: int, algorithm: str = 'CART') -> dict:
         """Returns the best split for the dataset based on the algorithm specified.
 
         Preconditions:
@@ -175,7 +165,7 @@ class DecisionTreeGenerator:
         max_info_gain = -np.inf
 
         for feature_ind in range(num_features):
-            feature_values = dataset[:, feature_ind]
+            # feature_values = dataset[:, feature_ind]
             threshold = 1
             left_data, right_data = self.split_dataset(dataset, feature_ind, threshold)
             if len(left_data) > 0 and len(right_data) > 0:
@@ -262,7 +252,7 @@ class DecisionTreeGenerator:
 
     def calculate_leaf_value(self, dataset: np.ndarray) -> float:
         """Returns the leaf value of the dataset."""
-        return dataset[:, -1]
+        return dataset[-1]
 
     def fit(self, dataset: pd.DataFrame, algorithm: str = 'CART') -> None:
         """Fits the decision tree to the dataset.
@@ -281,12 +271,16 @@ class DecisionTreeGenerator:
 
 
 if __name__ == '__main__':
-    pass
-    # import python_ta
-    #
-    # python_ta.check_all(config={
-    #     'extra-imports': ['pandas', 'numpy', 'python_ta.contracts', 'typing', 'doctest'],
-    #     'allowed-io': [],
-    #     'max-line-length': 100,
-    #     'disable': ['R1705', 'C0200', 'R0913', 'W0622', 'R0902']
-    # })
+    # dataset = data.DATASET
+    # generator = DecisionTreeGenerator(2, 8)
+    # generator.fit(dataset, 'multivariate')
+    # guess_tree = generator.get_gametree()
+    # print(guess_tree)
+
+    import python_ta
+
+    python_ta.check_all(config={
+        'extra-imports': ['data', 'numpy', 'pandas', 'typing', 'guess_tree'],
+        'max-line-length': 120,
+        'disable': ['R1705', 'C0200']
+    })
