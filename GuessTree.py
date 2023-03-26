@@ -39,8 +39,8 @@ class GuessTree:
               The right subtree, or None if this tree is empty.
             - algorithm:
                 The algorithm used to build this tree.
-            - feature:
-                The feature used to split this node.
+            - feature_ind:
+                The index of the feature used to split this node.
             - threshold:
                  The threshold used to split this node.
             - info_gain:
@@ -54,7 +54,7 @@ class GuessTree:
     algorithm: Optional[str]
 
     # for decision node
-    feature: Optional[str]
+    feature_ind: Optional[int]
     threshold: Optional[float]
     info_gain: Optional[float]
 
@@ -62,7 +62,7 @@ class GuessTree:
     value: Optional[Any]
 
     def __init__(self, left: Optional[GuessTree] = None, right: Optional[GuessTree] = None,
-                 feature: Optional[str] = None,
+                 feature_ind: Optional[int] = None,
                  threshold: Optional[float] = None, info_gain: Optional[float] = None, value: Optional[float] = None,
                  node_type: str = 'decision', algorithm: str = 'CART') -> None:
         """Initializes a new GuessTree.
@@ -70,7 +70,7 @@ class GuessTree:
 
         Preconditions:
             - node_type in {'decision', 'leaf'}
-            - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'Multivariate'}
+            - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'variance'}
         """
         if node_type == 'leaf':
             self.left = None
@@ -83,7 +83,7 @@ class GuessTree:
         self.node_type = node_type
 
         # for decision node
-        self.feature = feature
+        self.feature_ind = feature_ind
         self.threshold = threshold
         self.info_gain = info_gain
 
@@ -108,7 +108,7 @@ class GuessTree:
         """
 
         if self.node_type == 'decision':
-            return (depth * '  ' + f'{self.threshold}\n'
+            return (depth * '  ' + f'{data.features[self.feature_ind]} < {self.threshold} ig= {self.info_gain}  \n'
                     + self.left.str_indented(depth + 1)
                     + self.right.str_indented(depth + 1))
         else:
@@ -146,7 +146,7 @@ class DecisionTreeGenerator:
         """Builds a decision tree based on the algorithm specified.
 
         Preconditions:
-            - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'Multivariate'}
+            - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'variance'}
             - max_depth >= 0
             - min_splits >= 2
         """
@@ -158,10 +158,10 @@ class DecisionTreeGenerator:
             if best_split:
                 left_subtree = self.build_tree(best_split['left'], algorithm, curr_depth + 1)
                 right_subtree = self.build_tree(best_split['right'], algorithm, curr_depth + 1)
-                return GuessTree(left_subtree, right_subtree, best_split['feature'], best_split['threshold'],
+                return GuessTree(left_subtree, right_subtree, best_split['feature_ind'], best_split['threshold'],
                                  best_split['info_gain'], node_type='decision',
                                  algorithm=algorithm)
-        leaf_value = self.get_leaf_value(y)
+        leaf_value = self.calculate_leaf_value(y)
         self.gTree = GuessTree(value=leaf_value, node_type='leaf')
         return self.gTree
 
@@ -169,7 +169,7 @@ class DecisionTreeGenerator:
         """Returns the best split for the dataset based on the algorithm specified.
 
         Preconditions:
-            - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'Multivariate'}
+            - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'variance'}
         """
         best_split = {}
         max_info_gain = -np.inf
@@ -179,8 +179,7 @@ class DecisionTreeGenerator:
             threshold = 1
             left_data, right_data = self.split_dataset(dataset, feature_ind, threshold)
             if len(left_data) > 0 and len(right_data) > 0:
-                y, left_y, right_y = dataset[:, -1], left_data[:, -1], right_data[:, -1]
-                information_gain = self.get_information_gain(y, left_y, right_y, algorithm)
+                information_gain = self.get_information_gain(dataset, left_data, right_data, algorithm)
                 if information_gain > max_info_gain:
                     max_info_gain = information_gain
                     best_split['feature_ind'] = feature_ind
@@ -211,8 +210,8 @@ class DecisionTreeGenerator:
             information_gain = self.get_gain_ratio(parent_data, left_data, right_data)
         elif algorithm == 'Chi-squared':
             information_gain = self.get_chi_squared(parent_data, left_data, right_data)
-        else:  # algorithm == 'Multivariate'
-            information_gain = self.get_multivariate(parent_data, left_data, right_data)
+        else:  # algorithm == 'variance'
+            information_gain = self.get_variance(parent_data, left_data, right_data)
         return information_gain
 
     def get_entropy(self, dataset: np.ndarray) -> float:
@@ -242,27 +241,34 @@ class DecisionTreeGenerator:
         split_info = -left_weight * np.log2(left_weight) - right_weight * np.log2(right_weight)
         return gain_info / split_info
 
-    def get_chi_squared(self, dataset: pd.DataFrame, feature: str, threshold: float) -> float:
-        """Returns the chi squared value of the dataset based on the feature and threshold specified."""
+    def get_chi_squared(self, parent_data: np.ndarray, left_data: np.ndarray, right_data: np.ndarray) -> float:
+        """Returns the chi-squared value of the dataset"""
         chi_squared = 0
-        for label in np.unique(dataset.iloc[:, -1]):
-            expected = len(dataset[dataset.iloc[:, -1] == label]) * len(
-                dataset[dataset.iloc[:, feature] < threshold]) / len(dataset)
-            observed = len(dataset[(dataset.iloc[:, -1] == label) & (dataset.iloc[:, feature] < threshold)])
-            chi_squared += (observed - expected) ** 2 / expected
+        for label in np.unique(parent_data[:, -1]):
+            p = len(parent_data[parent_data[:, -1] == label]) / len(parent_data)
+            left_p = len(left_data[left_data[:, -1] == label]) / len(left_data)
+            right_p = len(right_data[right_data[:, -1] == label]) / len(right_data)
+            chi_squared += ((left_p - p) ** 2 / p + (right_p - p) ** 2 / p) ** 0.5
         return chi_squared
 
-    def get_multivariate(self, dataset: pd.DataFrame, feature: str, threshold: float) -> float:
-        """Returns the multivariate value of the dataset based on the feature and threshold specified."""
+    def get_variance(self, parent_data: np.ndarray, left_data: np.ndarray, right_data: np.ndarray) -> float:
+        """Returns the variance value of the dataset based on the feature and threshold specified."""
+        left_weight = len(left_data) / len(parent_data)
+        right_weight = len(right_data) / len(parent_data)
+        left_variance = np.var(left_data[:, :-1])
+        right_variance = np.var(right_data[:, :-1])
+        parent_variance = np.var(parent_data[:, :-1])
+        return parent_variance - left_weight * left_variance - right_weight * right_variance
 
-    def calculate_leaf_value(self, dataset: pd.DataFrame) -> float:
+    def calculate_leaf_value(self, dataset: np.ndarray) -> float:
         """Returns the leaf value of the dataset."""
+        return dataset[:, -1]
 
     def fit(self, dataset: pd.DataFrame, algorithm: str = 'CART') -> None:
         """Fits the decision tree to the dataset.
 
         Preconditions:
-            - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'Multivariate'}
+            - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'variance'}
         """
         x = dataset.iloc[:, :-1].values
         y = dataset.iloc[:, -1].values.reshape(-1, 1)
