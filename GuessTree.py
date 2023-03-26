@@ -9,9 +9,10 @@ For more information on copyright for CSC111 materials, please consult our Cours
 """
 from __future__ import annotations
 from typing import Any, Optional
+import pickle
 import pandas as pd
 import numpy as np
-import pickle
+
 
 from python_ta.contracts import check_contracts
 
@@ -129,7 +130,7 @@ class GuessTree:
             return pickle.load(f)
 
 
-# @check_contracts
+@check_contracts
 class DecisionTreeGenerator:
     """
     A class that generates a decision tree based on the algorithm specified.
@@ -151,6 +152,7 @@ class DecisionTreeGenerator:
 
     def __init__(self, min_splits: Optional[int] = 2, max_depth: Optional[int] = 6) -> None:
         """Initializes a new DecisionTreeGenerator."""
+        self.gTree = None
         self.min_splits = min_splits
         self.max_depth = max_depth
 
@@ -203,7 +205,7 @@ class DecisionTreeGenerator:
                     best_split['info_gain'] = information_gain
         return best_split
 
-    def split_dataset(self, dataset: np.ndarray, feature_ind: int, threshold: float) -> tuple[np.array, np.array]:
+    def split_dataset(self, dataset: np.ndarray, feature_ind: int, threshold: int) -> tuple[np.array, np.array]:
         """Splits the dataset based on the threshold specified."""
         left_data = dataset[dataset[:, feature_ind] < threshold]
         right_data = dataset[dataset[:, feature_ind] >= threshold]
@@ -274,7 +276,7 @@ class DecisionTreeGenerator:
         parent_variance = np.var(parent_data[:, :-1])
         return parent_variance - left_weight * left_variance - right_weight * right_variance
 
-    def calculate_leaf_value(self, dataset: np.ndarray) -> float:
+    def calculate_leaf_value(self, dataset: np.ndarray) -> str:
         """Returns the leaf value of the dataset."""
         return dataset[-1]
 
@@ -302,16 +304,13 @@ def tree_runner(file_name: str) -> list[GuessTree]:
     for algorithm in ['CART', 'ID3', 'C4.5', 'Chi-squared', 'variance']:
         dataset = pd.read_csv(file_name)
         generator = DecisionTreeGenerator(2, 8)
-        generator.fit(dataset, 'multivariate')
+        generator.fit(dataset, algorithm)
         new_tree = generator.get_gametree()
         new_file = 'data/' + algorithm + '_tree.pkl'
-        guess_tree.write_guess_tree(new_file)
+        new_tree.write_guess_tree(new_file)
         tree_list.append(new_tree)
     return tree_list
 
 
 if __name__ == '__main__':
     tree_runner('data/guess_who.csv')
-    g = GuessTree()
-    guess_tree = g.read_guess_tree('data/CART_tree.pkl')
-    print(guess_tree)

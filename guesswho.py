@@ -1,8 +1,8 @@
 import numpy as np
 from character import Character
 
-class GuessWho():
 
+class GuessWho():
     character_board: np.ndarray
     player1_character: int
     player2_character: int
