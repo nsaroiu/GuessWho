@@ -61,8 +61,9 @@ class GuessTree:
     # for leaf node
     value: Optional[Any]
 
-    def __init__(self, feature: Optional[str] = None, threshold: Optional[float] = None,
-                 info_gain: Optional[float] = None, value: Optional[float] = None,
+    def __init__(self, left: Optional[GuessTree] = None, right: Optional[GuessTree] = None,
+                 feature: Optional[str] = None,
+                 threshold: Optional[float] = None, info_gain: Optional[float] = None, value: Optional[float] = None,
                  node_type: str = 'decision', algorithm: str = 'CART') -> None:
         """Initializes a new GuessTree.
 
@@ -75,8 +76,8 @@ class GuessTree:
             self.left = None
             self.right = None
         else:
-            self.left = GuessTree(None)
-            self.right = GuessTree(None)
+            self.left = left
+            self.right = right
 
         self.algorithm = algorithm
         self.node_type = node_type
@@ -149,28 +150,107 @@ class DecisionTreeGenerator:
             - max_depth >= 0
             - min_splits >= 2
         """
+        x, y = dataset[:, :-1], dataset[:, -1]
+        num_samples, num_features = np.shape(x)
 
-    def get_best_split(self, dataset: np.ndarray, algorithm: str = 'CART') -> tuple:
+        if num_samples >= self.min_splits and curr_depth < self.max_depth:
+            best_split = self.get_best_split(dataset, num_samples, num_features, algorithm)
+            if best_split:
+                left_subtree = self.build_tree(best_split['left'], algorithm, curr_depth + 1)
+                right_subtree = self.build_tree(best_split['right'], algorithm, curr_depth + 1)
+                return GuessTree(left_subtree, right_subtree, best_split['feature'], best_split['threshold'],
+                                 best_split['info_gain'], node_type='decision',
+                                 algorithm=algorithm)
+        leaf_value = self.get_leaf_value(y)
+        self.gTree = GuessTree(value=leaf_value, node_type='leaf')
+        return self.gTree
+
+    def get_best_split(self, dataset: np.ndarray, num_samples: int, num_features: int, algorithm: str = 'CART') -> dict:
         """Returns the best split for the dataset based on the algorithm specified.
 
         Preconditions:
             - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'Multivariate'}
         """
+        best_split = {}
+        max_info_gain = -np.inf
 
-    def split_dataset(self, dataset: np.ndarray, feature: str, threshold: float) -> tuple:
-        """Splits the dataset based on the feature and threshold specified."""
+        for feature_ind in range(num_features):
+            feature_values = dataset[:, feature_ind]
+            threshold = 1
+            left_data, right_data = self.split_dataset(dataset, feature_ind, threshold)
+            if len(left_data) > 0 and len(right_data) > 0:
+                y, left_y, right_y = dataset[:, -1], left_data[:, -1], right_data[:, -1]
+                information_gain = self.get_information_gain(y, left_y, right_y, algorithm)
+                if information_gain > max_info_gain:
+                    max_info_gain = information_gain
+                    best_split['feature_ind'] = feature_ind
+                    best_split['threshold'] = threshold
+                    best_split['left_data'] = left_data
+                    best_split['right_data'] = right_data
+                    best_split['info_gain'] = information_gain
+        return best_split
 
-    def get_information_gain(self, parent_data: np.ndarray, feature: str, threshold: float) -> float:
+    def split_dataset(self, dataset: np.ndarray, feature_ind: int, threshold: float) -> tuple[np.array, np.array]:
+        """Splits the dataset based on the threshold specified."""
+        left_data = dataset[dataset[:, feature_ind] < threshold]
+        right_data = dataset[dataset[:, feature_ind] >= threshold]
+        return left_data, right_data
+
+    def get_information_gain(self, parent_data: np.ndarray, left_data: np.ndarray, right_data: np.ndarray,
+                             algorithm: str) -> float:
         """Returns the information gain of the dataset based on the feature and threshold specified."""
+        left_weight = len(left_data) / len(parent_data)
+        right_weight = len(right_data) / len(parent_data)
+        if algorithm == 'CART':
+            information_gain = self.get_gini_index(parent_data) - left_weight * self.get_gini_index(
+                left_data) - right_weight * self.get_gini_index(right_data)
+        elif algorithm == 'ID3':
+            information_gain = self.get_entropy(parent_data) - left_weight * self.get_entropy(
+                left_data) - right_weight * self.get_entropy(right_data)
+        elif algorithm == 'C4.5':
+            information_gain = self.get_gain_ratio(parent_data, left_data, right_data)
+        elif algorithm == 'Chi-squared':
+            information_gain = self.get_chi_squared(parent_data, left_data, right_data)
+        else:  # algorithm == 'Multivariate'
+            information_gain = self.get_multivariate(parent_data, left_data, right_data)
+        return information_gain
 
     def get_entropy(self, dataset: np.ndarray) -> float:
         """Returns the entropy of the dataset."""
+        num_samples = len(dataset)
+        entropy = 0
+        for label in np.unique(dataset[:, -1]):
+            p = len(dataset[dataset[:, -1] == label]) / num_samples
+            entropy += -p * np.log2(p)
+        return entropy
 
     def get_gini_index(self, dataset: np.ndarray) -> float:
         """Returns the gini index of the dataset."""
+        num_samples = len(dataset)
+        gini_index = 0
+        for label in np.unique(dataset[:, -1]):
+            p = len(dataset[dataset[:, -1] == label]) / num_samples
+            gini_index += p * (1 - p)
+        return gini_index
+
+    def get_gain_ratio(self, parent_data: np.ndarray, left_data: np.ndarray, right_data: np.ndarray) -> float:
+        """Returns the gain ratio of the dataset based on the feature and threshold specified."""
+        left_weight = len(left_data) / len(parent_data)
+        right_weight = len(right_data) / len(parent_data)
+        gain_info = self.get_entropy(parent_data) - left_weight * self.get_entropy(
+            left_data) - right_weight * self.get_entropy(right_data)
+        split_info = -left_weight * np.log2(left_weight) - right_weight * np.log2(right_weight)
+        return gain_info / split_info
 
     def get_chi_squared(self, dataset: pd.DataFrame, feature: str, threshold: float) -> float:
         """Returns the chi squared value of the dataset based on the feature and threshold specified."""
+        chi_squared = 0
+        for label in np.unique(dataset.iloc[:, -1]):
+            expected = len(dataset[dataset.iloc[:, -1] == label]) * len(
+                dataset[dataset.iloc[:, feature] < threshold]) / len(dataset)
+            observed = len(dataset[(dataset.iloc[:, -1] == label) & (dataset.iloc[:, feature] < threshold)])
+            chi_squared += (observed - expected) ** 2 / expected
+        return chi_squared
 
     def get_multivariate(self, dataset: pd.DataFrame, feature: str, threshold: float) -> float:
         """Returns the multivariate value of the dataset based on the feature and threshold specified."""
