@@ -48,8 +48,6 @@ DATASET = pd.DataFrame({
              'peter', 'philip', 'richard', 'robert', 'sam', 'susan', 'tom']
 })
 
-# features to use for the dataset
-features = np.array([feature for feature in DATASET.columns if feature != 'name'])
 
 # column description for the dataset
 column_description = {
@@ -77,11 +75,9 @@ column_description = {
 }
 
 if __name__ == '__main__':
-    import python_ta
-
-    python_ta.check_all(config={
-        'extra-imports': ['pandas', 'numpy', 'python_ta.contracts', 'typing', 'doctest'],
-        'allowed-io': [],
-        'max-line-length': 100,
-        'disable': ['R1705', 'C0200', 'R0913', 'W0622', 'R0902']
-    })
+    import csv
+    d = DATASET.iloc[:, :].values
+    with open('data/guess_who.csv', 'w', newline='') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=',')
+        for row in d:
+            spamwriter.writerow(row)

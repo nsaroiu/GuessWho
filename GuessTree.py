@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import Any, Optional
 import pandas as pd
 import numpy as np
-import data
+import pickle
 
 from python_ta.contracts import check_contracts
 
@@ -36,6 +36,7 @@ class GuessTree:
             - right: The right subtree, or None if this tree is empty.
             - algorithm: The algorithm used to build this tree.
             - feature_ind: The index of the feature used to split this node.
+            - feature: The feature used to split this node.
             - threshold: The threshold used to split this node.
             - info_gain: The information gain of this node.
             - value: The value of this node. Only used for leaf nodes.
@@ -45,16 +46,17 @@ class GuessTree:
     right: Optional[GuessTree]
     algorithm: Optional[str]
 
-    # for decision node
+    # decision node
     feature_ind: Optional[int]
+    feature: Optional[str]
     threshold: Optional[float]
     info_gain: Optional[float]
 
-    # for leaf node
+    # leaf node
     value: Optional[Any]
 
     def __init__(self, left: Optional[GuessTree] = None, right: Optional[GuessTree] = None,
-                 feature_ind: Optional[int] = None,
+                 feature_ind: Optional[int] = None, feature: Optional[str] = None,
                  threshold: Optional[float] = None, info_gain: Optional[float] = None, value: Optional[float] = None,
                  node_type: str = 'decision', algorithm: str = 'CART') -> None:
         """Initializes a new GuessTree.
@@ -76,6 +78,7 @@ class GuessTree:
 
         # for decision node
         self.feature_ind = feature_ind
+        self.feature = feature
         self.threshold = threshold
         self.info_gain = info_gain
 
@@ -100,11 +103,30 @@ class GuessTree:
         """
 
         if self.node_type == 'decision':
-            return (depth * '  ' + f'{data.features[self.feature_ind]} < {self.threshold} ig= {self.info_gain}  \n'
+            return (depth * '  ' + f'{self.feature} < {self.threshold} ig= {self.info_gain}  \n'
                     + self.left.str_indented(depth + 1)
                     + self.right.str_indented(depth + 1))
         else:
             return depth * '  ' + f'{self.value}\n'
+
+    def write_guess_tree(self, filename: str) -> None:
+        """Write this GuessTree to a file.
+
+        Preconditions:
+            - filename ends with '.pkl'
+        """
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def read_guess_tree(filename: str) -> GuessTree:
+        """Read a GuessTree from a file and returns it.
+
+        Preconditions:
+            - filename ends with '.pkl'
+        """
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
 
 
 # @check_contracts
@@ -132,7 +154,8 @@ class DecisionTreeGenerator:
         self.min_splits = min_splits
         self.max_depth = max_depth
 
-    def build_tree(self, dataset: np.ndarray, algorithm: str = 'CART', curr_depth: int = 0) -> GuessTree:
+    def build_tree(self, dataset: np.ndarray, features: np.array, algorithm: str = 'CART',
+                   curr_depth: int = 0) -> GuessTree:
         """Builds a decision tree based on the algorithm specified.
 
         Preconditions:
@@ -146,9 +169,10 @@ class DecisionTreeGenerator:
         if num_samples >= self.min_splits and curr_depth < self.max_depth:
             best_split = self.get_best_split(dataset, num_features, algorithm)
             if best_split:
-                left_subtree = self.build_tree(best_split['left_data'], algorithm, curr_depth + 1)
-                right_subtree = self.build_tree(best_split['right_data'], algorithm, curr_depth + 1)
-                return GuessTree(left_subtree, right_subtree, best_split['feature_ind'], best_split['threshold'],
+                left_subtree = self.build_tree(best_split['left_data'], features, algorithm, curr_depth + 1)
+                right_subtree = self.build_tree(best_split['right_data'], features, algorithm, curr_depth + 1)
+                return GuessTree(left_subtree, right_subtree, best_split['feature_ind'],
+                                 features[best_split['feature_ind']], best_split['threshold'],
                                  best_split['info_gain'], node_type='decision',
                                  algorithm=algorithm)
 
@@ -262,25 +286,32 @@ class DecisionTreeGenerator:
         """
         x = dataset.iloc[:, :-1].values
         y = dataset.iloc[:, -1].values.reshape(-1, 1)
+        features = np.array(dataset.columns)
         new_dataset = np.concatenate((x, y), axis=1)
-        self.gTree = self.build_tree(new_dataset, algorithm)
+        self.gTree = self.build_tree(new_dataset, features, algorithm)
 
     def get_gametree(self) -> GuessTree:
         """Returns the GuessTree object."""
         return self.gTree
 
 
+def tree_runner(file_name: str) -> list[GuessTree]:
+    """Runs the decision tree generator for the given dataset and writes the tree to a file.
+    """
+    tree_list = []
+    for algorithm in ['CART', 'ID3', 'C4.5', 'Chi-squared', 'variance']:
+        dataset = pd.read_csv(file_name)
+        generator = DecisionTreeGenerator(2, 8)
+        generator.fit(dataset, 'multivariate')
+        new_tree = generator.get_gametree()
+        new_file = 'data/' + algorithm + '_tree.pkl'
+        guess_tree.write_guess_tree(new_file)
+        tree_list.append(new_tree)
+    return tree_list
+
+
 if __name__ == '__main__':
-    # dataset = data.DATASET
-    # generator = DecisionTreeGenerator(2, 8)
-    # generator.fit(dataset, 'multivariate')
-    # guess_tree = generator.get_gametree()
-    # print(guess_tree)
-
-    import python_ta
-
-    python_ta.check_all(config={
-        'extra-imports': ['data', 'numpy', 'pandas', 'typing', 'guess_tree'],
-        'max-line-length': 120,
-        'disable': ['R1705', 'C0200']
-    })
+    tree_runner('data/guess_who.csv')
+    g = GuessTree()
+    guess_tree = g.read_guess_tree('data/CART_tree.pkl')
+    print(guess_tree)
