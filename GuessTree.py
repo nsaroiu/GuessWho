@@ -13,7 +13,6 @@ import pickle
 import pandas as pd
 import numpy as np
 
-
 from python_ta.contracts import check_contracts
 
 
@@ -22,39 +21,39 @@ class GuessTree:
     """A binary tree class that stores the decision tree for a given dataset and algorithm.
 
         Representation Invariants:
-            - (self.type == 'leaf') == (self.left is None)
-            - (self.type == 'leaf') == (self.right is None)
-            - (self.type == 'decision') == (self.value is None)
-            - (self.type == 'decision') == (self.algorithm is not None)
-            - (self.type == 'decision') == (self.feature is not None)
-            - (self.type == 'decision') == (self.threshold is not None)
-            - (self.type == 'decision') == (self.info_gain is not None)
+            - (self._type == 'leaf') == (self._left is None)
+            - (self._type == 'leaf') == (self._right is None)
+            - (self._type == 'decision') == (self._value is None)
+            - (self._type == 'decision') == (self._algorithm is not None)
+            - (self._type == 'decision') == (self._feature is not None)
+            - (self._type == 'decision') == (self._threshold is not None)
+            - (self._type == 'decision') == (self._info_gain is not None)
 
 
-        Instance Attributes:
-            - node_type: The type of this node. Either 'leaf' or 'decision'.
-            - left: The left subtree, or None if this tree is empty.
-            - right: The right subtree, or None if this tree is empty.
-            - algorithm: The algorithm used to build this tree.
-            - feature_ind: The index of the feature used to split this node.
-            - feature: The feature used to split this node.
-            - threshold: The threshold used to split this node.
-            - info_gain: The information gain of this node.
-            - value: The value of this node. Only used for leaf nodes.
+        Private Instance Attributes:
+            - _node_type: The type of this node. Either 'leaf' or 'decision'.
+            - _left: The left subtree, or None if this tree is empty.
+            - _right: The right subtree, or None if this tree is empty.
+            - _algorithm: The algorithm used to build this tree.
+            - _feature_ind: The index of the feature used to split this node.
+            - _feature: The feature used to split this node.
+            - _threshold: The threshold used to split this node.
+            - _info_gain: The information gain of this node.
+            - _value: The value of this node. Only used for leaf nodes.
           """
-    node_type: str
-    left: Optional[GuessTree]
-    right: Optional[GuessTree]
-    algorithm: Optional[str]
+    _node_type: str
+    _left: Optional[GuessTree]
+    _right: Optional[GuessTree]
+    _algorithm: Optional[str]
 
     # decision node
-    feature_ind: Optional[int]
-    feature: Optional[str]
-    threshold: Optional[float]
-    info_gain: Optional[float]
+    _feature_ind: Optional[int]
+    _feature: Optional[str]
+    _threshold: Optional[float]
+    _info_gain: Optional[float]
 
     # leaf node
-    value: Optional[Any]
+    _value: Optional[Any]
 
     def __init__(self, left: Optional[GuessTree] = None, right: Optional[GuessTree] = None,
                  feature_ind: Optional[int] = None, feature: Optional[str] = None,
@@ -68,23 +67,23 @@ class GuessTree:
             - algorithm in {'CART', 'ID3', 'C4.5','Chi-squared', 'variance'}
         """
         if node_type == 'leaf':
-            self.left = None
-            self.right = None
+            self._left = None
+            self._right = None
         else:
-            self.left = left
-            self.right = right
+            self._left = left
+            self._right = right
 
-        self.algorithm = algorithm
-        self.node_type = node_type
+        self._algorithm = algorithm
+        self._node_type = node_type
 
         # for decision node
-        self.feature_ind = feature_ind
-        self.feature = feature
-        self.threshold = threshold
-        self.info_gain = info_gain
+        self._feature_ind = feature_ind
+        self._feature = feature
+        self._threshold = threshold
+        self._info_gain = info_gain
 
         # for leaf node
-        self.value = value
+        self._value = value
 
     def __str__(self) -> str:
         """Return a string representation of this GuessTree.
@@ -103,12 +102,12 @@ class GuessTree:
             - depth >= 0
         """
 
-        if self.node_type == 'decision':
-            return (depth * '  ' + f'{self.feature} < {self.threshold} ig= {self.info_gain}  \n'
-                    + self.left.str_indented(depth + 1)
-                    + self.right.str_indented(depth + 1))
+        if self._node_type == 'decision':
+            return (depth * '  ' + f'{self._feature} < {self._threshold} ig= {self._info_gain}  \n'
+                    + self._left.str_indented(depth + 1)
+                    + self._right.str_indented(depth + 1))
         else:
-            return depth * '  ' + f'{self.value}\n'
+            return depth * '  ' + f'{self._value}\n'
 
     def write_guess_tree(self, filename: str) -> None:
         """Write this GuessTree to a file.
@@ -129,6 +128,27 @@ class GuessTree:
         with open(filename, 'rb') as f:
             return pickle.load(f)
 
+    def get_feature(self) -> str:
+        """Return the feature of this node."""
+        return self._feature
+
+    def traverse_tree(self, condition: bool) -> list[str, GuessTree]|str:
+        """Traverse the tree based on the value of the feature in the row.
+
+        Preconditions:
+            - self._node_type == 'decision'
+        """
+        if condition:
+            if self._left._node_type == 'leaf':
+                return self._left._value
+            else:
+                return [self._left._feature, self._left]
+        else:
+            if self._right._node_type == 'leaf':
+                return self._right._value
+            else:
+                return [self._right._feature, self._right]
+
 
 @check_contracts
 class DecisionTreeGenerator:
@@ -141,18 +161,20 @@ class DecisionTreeGenerator:
         - gTree is a GuessTree object
 
     Instance Attributes:
-        - gTree: The GuessTree object that stores the decision tree.
         - min_splits: The minimum number of splits required to build the tree.
         - max_depth: The maximum depth of the tree.
+
+    Private Instance Attributes:
+        - _gTree: The GuessTree object that stores the decision tree.
     """
 
-    gTree: Optional[GuessTree]
+    _gTree: Optional[GuessTree]
     min_splits: int
     max_depth: int
 
     def __init__(self, min_splits: Optional[int] = 2, max_depth: Optional[int] = 6) -> None:
         """Initializes a new DecisionTreeGenerator."""
-        self.gTree = None
+        self._gTree = None
         self.min_splits = min_splits
         self.max_depth = max_depth
 
@@ -290,11 +312,11 @@ class DecisionTreeGenerator:
         y = dataset.iloc[:, -1].values.reshape(-1, 1)
         features = np.array(dataset.columns)
         new_dataset = np.concatenate((x, y), axis=1)
-        self.gTree = self.build_tree(new_dataset, features, algorithm)
+        self._gTree = self.build_tree(new_dataset, features, algorithm)
 
     def get_gametree(self) -> GuessTree:
         """Returns the GuessTree object."""
-        return self.gTree
+        return self._gTree
 
 
 def tree_runner(file_name: str) -> list[GuessTree]:
