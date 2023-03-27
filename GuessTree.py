@@ -132,8 +132,9 @@ class GuessTree:
         """Return the feature of this node."""
         return self._feature
 
-    def traverse_tree(self, condition: bool) -> list[str, GuessTree]|str:
-        """Traverse the tree based on the value of the feature in the row.
+    def traverse_tree(self, condition: bool) -> list[str, GuessTree] | str:
+        """Traverse the tree based on the condition corresponding to the feature of the current node
+        and return the corresponding subtree or leaf.
 
         Preconditions:
             - self._node_type == 'decision'
@@ -148,6 +149,25 @@ class GuessTree:
                 return self._right._value
             else:
                 return [self._right._feature, self._right]
+
+    def get_height(self) -> int:
+        """Return the height of the tree."""
+        if self._node_type == 'leaf':
+            return 0
+        else:
+            return 1 + max(self._left.get_height(), self._right.get_height())
+
+    def get_heights(self) -> list[int]:
+        """Return a list of heights of the tree."""
+        if self._node_type == 'leaf':
+            return [0]
+        else:
+            heights_list = []
+            left_heights = [1 + height for height in self._left.get_heights()]
+            right_heights = [1 + height for height in self._right.get_heights()]
+            heights_list.extend(left_heights)
+            heights_list.extend(right_heights)
+            return heights_list
 
 
 @check_contracts
@@ -325,7 +345,7 @@ def tree_runner(file_name: str) -> list[GuessTree]:
     tree_list = []
     for algorithm in ['CART', 'ID3', 'C4.5', 'Chi-squared', 'variance']:
         dataset = pd.read_csv(file_name)
-        generator = DecisionTreeGenerator(2, 8)
+        generator = DecisionTreeGenerator(2, 15)
         generator.fit(dataset, algorithm)
         new_tree = generator.get_gametree()
         new_file = 'data/' + algorithm + '_tree.pkl'
