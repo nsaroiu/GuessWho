@@ -28,19 +28,18 @@ class GuessTree:
             - (self._type == 'decision') == (self._feature is not None)
             - (self._type == 'decision') == (self._threshold is not None)
             - (self._type == 'decision') == (self._info_gain is not None)
-
-
-        Private Instance Attributes:
-            - _node_type: The type of this node. Either 'leaf' or 'decision'.
-            - _left: The left subtree, or None if this tree is empty.
-            - _right: The right subtree, or None if this tree is empty.
-            - _algorithm: The algorithm used to build this tree.
-            - _feature_ind: The index of the feature used to split this node.
-            - _feature: The feature used to split this node.
-            - _threshold: The threshold used to split this node.
-            - _info_gain: The information gain of this node.
-            - _value: The value of this node. Only used for leaf nodes.
           """
+    # Private Instance Attributes:
+    #     - _node_type: The type of this node. Either 'leaf' or 'decision'.
+    #     - _left: The left subtree, or None if this tree is empty.
+    #     - _right: The right subtree, or None if this tree is empty.
+    #     - _algorithm: The algorithm used to build this tree.
+    #     - _feature_ind: The index of the feature used to split this node.
+    #     - _feature: The feature used to split this node.
+    #     - _threshold: The threshold used to split this node.
+    #     - _info_gain: The information gain of this node.
+    #     - _value: The value of this node. Only used for leaf nodes.
+
     _node_type: str
     _left: Optional[GuessTree]
     _right: Optional[GuessTree]
@@ -183,10 +182,9 @@ class DecisionTreeGenerator:
     Instance Attributes:
         - min_splits: The minimum number of splits required to build the tree.
         - max_depth: The maximum depth of the tree.
-
-    Private Instance Attributes:
-        - _gTree: The GuessTree object that stores the decision tree.
     """
+    # Private Instance Attributes:
+    #     - _gTree: The GuessTree object that stores the decision tree.
 
     _gTree: Optional[GuessTree]
     min_splits: int
