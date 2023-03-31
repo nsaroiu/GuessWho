@@ -175,9 +175,9 @@ class DecisionTreeGenerator:
     A class that generates a decision tree based on the algorithm specified.
 
     Representation Invariants:
-        - min_splits >= 2
-        - max_depth >= 0
-        - gTree is a GuessTree object
+        - self.min_splits >= 2
+        - self.max_depth >= 0
+        - isinstance(self._gTree, GuessTree) or self._gTree is None
 
     Instance Attributes:
         - min_splits: The minimum number of splits required to build the tree.
@@ -353,4 +353,12 @@ def tree_runner(file_name: str) -> list[GuessTree]:
 
 
 if __name__ == '__main__':
-    tree_runner('data/guess_who.csv')
+    # tree_runner('data/guess_who.csv')
+    import python_ta
+
+    python_ta.check_all(config={
+        'extra-imports': ['numpy', 'pandas', 'typing'],
+        'allowed-io': ['tree_runner'],
+        'max-line-length': 100,
+        'disable': ['R1705', 'C0200']
+    })
