@@ -133,7 +133,7 @@ class GuessTree:
 
     def traverse_tree(self, condition: bool) -> list[str, GuessTree] | str:
         """Traverse the tree based on the condition corresponding to the feature of the current node
-        and return the corresponding subtree or leaf.
+        and return the corresponding feature along with the subtree, or a leaf (and therefore a guess).
 
         Preconditions:
             - self._node_type == 'decision'
@@ -157,7 +157,7 @@ class GuessTree:
             return 1 + max(self._left.get_height(), self._right.get_height())
 
     def get_heights(self) -> list[int]:
-        """Return a list of heights of the tree."""
+        """Return a list of heights from the root of the tree to each leaf of the tree."""
         if self._node_type == 'leaf':
             return [0]
         else:

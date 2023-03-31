@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 from character import Character
 import player
-import GuessTree as GT
+import GuessTree as gt
 
 from python_ta.contracts import check_contracts
 
