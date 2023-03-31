@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 from character import Character
 import player
-import GuessTree as gt
+from GuessTree import GuessTree
 
 from python_ta.contracts import check_contracts
 
@@ -65,7 +65,7 @@ class Player:
 
 class AIPlayer(Player):
     """ A class representing an AI player in a game of Guess Who."""
-    tree: gt.GuessTree
+    tree: GuessTree
 
     def make_guess(self, game: GuessWho) -> str:
         """Make a move in the given game of Guess Who.
