@@ -127,27 +127,30 @@ class GuessTree:
         with open(filename, 'rb') as f:
             return pickle.load(f)
 
-    def get_feature(self) -> str:
-        """Return the feature of this node."""
-        return self._feature
+    def get_guess(self) -> str:
+        """Return the feature or value of this node."""
+        return self._feature if self._feature is not None else self._value
 
-    def traverse_tree(self, condition: bool) -> list[str, GuessTree] | str:
+    def traverse_tree(self, condition: bool) -> GuessTree:
         """Traverse the tree based on the condition corresponding to the feature of the current node
         and return the corresponding feature along with the subtree, or a leaf (and therefore a guess).
 
         Preconditions:
             - self._node_type == 'decision'
         """
-        if condition:
-            if self._left._node_type == 'leaf':
-                return self._left._value
-            else:
-                return [self._left._feature, self._left]
-        else:
-            if self._right._node_type == 'leaf':
-                return self._right._value
-            else:
-                return [self._right._feature, self._right]
+
+        return self._right if condition else self._left
+
+        # if condition:
+        #     if self._right._node_type == 'leaf':
+        #         return self._right._value
+        #     else:
+        #         return [self._right._feature, self._right]
+        # else:
+        #     if self._left._node_type == 'leaf':
+        #         return self._left._value
+        #     else:
+        #         return [self._left._feature, self._left]
 
     def get_height(self) -> int:
         """Return the height of the tree."""
@@ -353,4 +356,5 @@ def tree_runner(file_name: str) -> list[GuessTree]:
 
 
 if __name__ == '__main__':
-    tree_runner('data/guess_who.csv')
+    #tree_runner('data/guess_who.csv')
+    pass
