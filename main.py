@@ -2,7 +2,7 @@ from guesswho import GuessWho
 import data
 from character import Character
 import random
-import GuessTree as gt
+from GuessTree import GuessTree
 
 def run_game() -> None:
     """Run a game of Guess Who.
@@ -10,10 +10,9 @@ def run_game() -> None:
 
     with open('./data/guess_who.csv') as file:
         features = file.readline().split(',')
-        player_board = set() # Set of characters that the player has not eliminated
         dataset = {} # Dictionary mapping character names to character objects
         character_list = [] # List of character objects
-        tree = gt.GuessTree.read_guess_tree('./data/CART_tree.pkl')
+        tree = GuessTree.read_guess_tree('./data/CART_tree.pkl')
 
         for line in file:
             line = line.split(',')
@@ -35,14 +34,11 @@ def run_game() -> None:
             # Create character object
             character = Character(character_name, character_features)
 
-            # Add character name to player board
-            player_board.add(character_name)
-
             # Add the character to the dataset
             dataset[character_name] = character
             character_list.append(character)
 
-    game = GuessWho(player_board, random.choice(character_list), random.choice(character_list), tree, dataset, set(features))
+    game = GuessWho(random.choice(character_list), random.choice(character_list), tree, dataset, set(features))
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':

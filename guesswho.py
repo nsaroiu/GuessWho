@@ -23,11 +23,9 @@ class GuessWho:
     """ A class representing the state of a game of Guess Who
 
         Representation Invariants:
-            - self.player_board != set()
-            - len(self.player_board) == 24
+            - len(self.dataset.keys()) == 24
 
         Instance Attributes:
-            - player_board: a set of all characters that the player has not eliminated
             - features: a set of all the valid features that has not been asked about
             - dataset: a dictionary of the characters in the game, where the keys are the character names
             - player: the player who is playing as player 1
@@ -36,7 +34,6 @@ class GuessWho:
             - _player_turn: boolean representing whether it is player 1's turn or not
 
     """
-    player_board: set[str]
     features: set[str]
 
     dataset: dict[str, Character]
@@ -48,10 +45,8 @@ class GuessWho:
 
     _player_turn: bool
 
-    def __init__(self, player_board: set[str], player_character: Character, ai_character: Character, tree: GuessTree,
+    def __init__(self, player_character: Character, ai_character: Character, tree: GuessTree,
                  dataset: dict[str, Character], features: set[str], player_turn: bool = True) -> None:
-
-        self.player_board = player_board
 
         self.dataset = dataset
         self.features = features
@@ -87,31 +82,13 @@ class GuessWho:
             # character
             if guess in self.dataset:
                 if guess != self.ai.get_character().name:
-                    self.player_board.remove(guess)
                     return_value = False
                 else:
                     self._record_winner(self.player)
                     return_value = True
             else:
-                # If the ai's character has the feature, remove all characters that do not have the feature from the
-                # game
-                if self.ai.get_character().has_feature(guess):
-                    for character in self.player_board:
-                        if not self.dataset[character].has_feature(guess):
-                            self.player_board.remove(character)
-
-                    # Set the return value to true, as the ai's character has the feature
-                    return_value = True
-
-                # If the ai's character does not have the feature, remove all characters that have the feature from the
-                # game
-                else:
-                    for character in self.player_board:
-                        if self.dataset[character].has_feature(guess):
-                            self.player_board.remove(character)
-
-                    # Set the return value to false, as the ai's character does not have the feature
-                    return_value = False
+                # Return whether the AI's character has the feature
+                return_value = self.ai.get_character().has_feature(guess)
 
         # Else, treat it as the AI's turn
         else:
@@ -168,7 +145,7 @@ class Player:
 
         # Print available features and characters, then ask the player to make a guess
         print(f'Available features to ask about: {game.features}\n-----------------')
-        print(f'Remaining valid characters: {game.player_board}\n-----------------')
+        print(f'Characters: {game.dataset.keys()}\n-----------------')
 
         # Ask the player to make a valid guess
         guess = ''

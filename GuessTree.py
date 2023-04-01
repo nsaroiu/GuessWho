@@ -178,8 +178,8 @@ class DecisionTreeGenerator:
     A class that generates a decision tree based on the algorithm specified.
 
     Representation Invariants:
-        - min_splits >= 2
-        - max_depth >= 0
+        - self.min_splits >= 2
+        - self.max_depth >= 0
         - gTree is a GuessTree object
 
     Instance Attributes:
