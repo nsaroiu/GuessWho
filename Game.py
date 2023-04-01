@@ -94,9 +94,18 @@ def pick_character(screen: pygame.Surface, width: float, height: float, dataset:
 
 def load_characters(game_state: guesswho.GuessWho, screen: pygame.Surface, width: float, height: float,
                     button_dict: dict[str, Button],
-                    character: str) -> None:
+                    selected_character: str) -> None:
     """Main function for the game.
     """
+    base_font = pygame.font.SysFont("Arial", 32)
+    input_rect = pygame.Rect(width / 2.2 - 50, height * 3 / 5 + 155, 235, 32)
+    color_inactive = pygame.Color('lightskyblue3')
+    color_active = pygame.Color('dodgerblue2')
+    color = color_inactive
+
+    active = False
+
+    user_text = ''
     clock = pygame.time.Clock()
     running = True
     dt = 0
@@ -129,9 +138,21 @@ def load_characters(game_state: guesswho.GuessWho, screen: pygame.Surface, width
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                if input_rect.collidepoint(event.pos):
+                    active = True
+                else:
+                    active = False
                 for button in button_dict:
                     if button_dict[button].on_click(event):
                         char_stats[button_dict[button].character] = not char_stats[button_dict[button].character]
+            elif event.type == pygame.KEYDOWN:
+                if active:
+                    if event.key == pygame.K_BACKSPACE:
+                        user_text = user_text[:-1]
+                    else:
+                        user_text += event.unicode
+                else:
+                    pass
 
         # fill the screen with a color to wipe away anything from last frame
         screen.fill("purple")
@@ -141,7 +162,22 @@ def load_characters(game_state: guesswho.GuessWho, screen: pygame.Surface, width
                 screen.blit(button_dict[button].image, button_dict[button].rect)
             else:
                 pass
-        screen.blit(button_dict[character].image, (width / 4, height * 3 / 4))
+
+        # Drawing Rectangle
+        pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(width / 2.2 - 5, height * 3 / 5 - 5, 140, 150))
+        screen.blit(button_dict[selected_character].image, (width / 2.2, height * 3 / 5))
+
+        if active:
+            color = color_active
+        else:
+            color = color_inactive
+
+        pygame.draw.rect(screen, color, input_rect)
+
+        txtsurf = base_font.render(user_text, True, (255, 255, 255))
+        screen.blit(txtsurf, (width / 2.2 - 49, height * 3 / 5 + 151))
+
+        input_rect.w = max(235, txtsurf.get_width() + 10)
         # flip() the display to put your work on screen
         pygame.display.flip()
 
@@ -182,4 +218,4 @@ def load_character(char_stat: bool, screen: pygame.surface, char_dict: dict[str,
 if __name__ == '__main__':
     pass
     screen, width, height = load_screen()
-    load_characters('', screen, width, height, {}, 'tom')
+    load_characters('', screen, width, height, {}, 'alex')
