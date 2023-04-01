@@ -2,7 +2,7 @@ from guesswho import GuessWho
 import data
 from character import Character
 import random
-import GuessTree as gt
+from GuessTree import GuessTree
 
 def run_game() -> None:
     """Run a game of Guess Who.
@@ -13,7 +13,7 @@ def run_game() -> None:
         player_board = set() # Set of characters that the player has not eliminated
         dataset = {} # Dictionary mapping character names to character objects
         character_list = [] # List of character objects
-        tree = gt.GuessTree.read_guess_tree('./data/CART_tree.pkl')
+        tree = GuessTree.read_guess_tree('./data/CART_tree.pkl')
 
         for line in file:
             line = line.split(',')
