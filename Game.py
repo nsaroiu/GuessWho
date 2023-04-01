@@ -12,11 +12,15 @@ from typing import Any, Optional
 import pandas as pd
 import numpy as np
 import pygame
+from character import Character
+import player
+from GuessTree import GuessTree
+import guesswho
 
 from python_ta.contracts import check_contracts
 
 
-def main() -> None:
+def load_characters(game_state: guesswho.GuessWho) -> None:
     """Main function for the game.
     """
     import pygame
@@ -29,6 +33,16 @@ def main() -> None:
     dt = 0
 
     player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+    char_dict = {}
+    for character in ['alex', 'alfred', 'anita', 'anne', 'bernard', 'bill', 'charles', 'claire',
+                      'david', 'eric', 'frans', 'george', 'herman', 'joe', 'maria', 'max', 'paul',
+                      'peter', 'philip', 'richard', 'robert', 'sam', 'susan', 'tom']:
+        file = 'images/' + character + '.jpg'
+        img = pygame.image.load(file).convert()
+        image_size = (150, 150)
+        # Scale the image to your needed size
+        img = pygame.transform.scale(img, image_size)
+        char_dict[character] = img
 
     while running:
         # poll for events
@@ -40,18 +54,28 @@ def main() -> None:
         # fill the screen with a color to wipe away anything from last frame
         screen.fill("purple")
 
-        pygame.draw.circle(screen, "red", player_pos, 40)
-
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            player_pos.y -= 300 * dt
-        if keys[pygame.K_s]:
-            player_pos.y += 300 * dt
-        if keys[pygame.K_a]:
-            player_pos.x -= 300 * dt
-        if keys[pygame.K_d]:
-            player_pos.x += 300 * dt
-
+        # pygame.draw.circle(screen, "red", player_pos, 40)
+        #
+        # keys = pygame.key.get_pressed()
+        # if keys[pygame.K_w]:
+        #     player_pos.y -= 300 * dt
+        # if keys[pygame.K_s]:
+        #     player_pos.y += 300 * dt
+        # if keys[pygame.K_a]:
+        #     player_pos.x -= 300 * dt
+        # if keys[pygame.K_d]:
+        #     player_pos.x += 300 * dt
+        info = pygame.display.Info()  # You have to call this before pygame.display.set_mode()
+        screen_width, screen_height = info.current_w, info.current_h
+        add_width = screen_width / 8
+        add_height = screen_height / 4.5
+        count = 0
+        for character in ['alex', 'alfred', 'anita', 'anne', 'bernard', 'bill', 'charles', 'claire',
+                          'david', 'eric', 'frans', 'george', 'herman', 'joe', 'maria', 'max', 'paul',
+                          'peter', 'philip', 'richard', 'robert', 'sam', 'susan', 'tom']:
+            # if game_state.character_board[character]:
+            screen.blit(char_dict[character], (10 + add_width * (count % 8), 10 + add_height * (count // 8)))
+            count += 1
         # flip() the display to put your work on screen
         pygame.display.flip()
 
@@ -64,4 +88,5 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    main()
+    pass
+    load_characters([])
