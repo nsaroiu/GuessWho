@@ -44,7 +44,8 @@ def pick_algorithm(screen: pygame.Surface, width: float, height: float) -> str:
 
     for i, algorithm in enumerate(algorithm_list):
         # center the button horizontally and offset the y position
-        button_dict[algorithm] = TextButton(algorithm, (width / 2 - 50, (height / 2 - total_height / 2) + 50 * i))
+        button_dict[algorithm] = TextButton(algorithm,
+                                            (width / 2 - len(algorithm) * 12 / 2, -250 + height / 2 + 50 * i))
 
     while running:
         # poll for events
@@ -64,7 +65,7 @@ def pick_algorithm(screen: pygame.Surface, width: float, height: float) -> str:
             screen.blit(txtsurf, button_dict[button].rect)
 
         txtsurf = font.render("Choose your algorithm", True, white)
-        screen.blit(txtsurf, (width / 4 + 200, height * 1 / 4))
+        screen.blit(txtsurf, (width / 2 - len("Choose your algorithm") * 12 / 2, height / 2 - 300))
         pygame.display.flip()
 
         # limits FPS to 60
@@ -122,8 +123,7 @@ def pick_character(screen: pygame.Surface, width: float, height: float, dataset:
         for button in button_dict:
             screen.blit(button_dict[button].image, button_dict[button].rect)
 
-        txtsurf = font.render("Pick any one of the characters by clicking on an image", True, white)
-        screen.blit(txtsurf, (width / 4, height * 3 / 4))
+        load_message(screen, width, height, "Pick any one of the characters by clicking on an image", 0, 100)
         # flip() the display to put your work on screen
         pygame.display.flip()
 
