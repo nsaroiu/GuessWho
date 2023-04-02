@@ -16,7 +16,7 @@ import numpy as np
 from python_ta.contracts import check_contracts
 
 
-@check_contracts
+# @check_contracts
 class GuessTree:
     """A binary tree class that stores the decision tree for a given dataset and algorithm.
 
@@ -118,7 +118,7 @@ class GuessTree:
             pickle.dump(self, f)
 
     @staticmethod
-    def read_guess_tree(filename: str) -> GuessTree:
+    def read_guess_tree(filename) -> GuessTree:
         """Read a GuessTree from a file and returns it.
 
         Preconditions:
@@ -140,17 +140,6 @@ class GuessTree:
         """
 
         return self._right if condition else self._left
-
-        # if condition:
-        #     if self._right._node_type == 'leaf':
-        #         return self._right._value
-        #     else:
-        #         return [self._right._feature, self._right]
-        # else:
-        #     if self._left._node_type == 'leaf':
-        #         return self._left._value
-        #     else:
-        #         return [self._left._feature, self._left]
 
     def get_height(self) -> int:
         """Return the height of the tree."""

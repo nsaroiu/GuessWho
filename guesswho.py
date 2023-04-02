@@ -1,5 +1,5 @@
 """Copyright and Usage Information
-===============================
+================================================
 Copyright (c) 2023 Prashanth Shyamala and Nicholas Saroiu
 All Rights Reserved.
 This program is the property of Prashanth Shyamala and Nicholas Saroiu.
@@ -18,7 +18,7 @@ from GuessTree import GuessTree
 from python_ta.contracts import check_contracts
 
 
-@check_contracts
+# @check_contracts
 class GuessWho:
     """ A class representing the state of a game of Guess Who
 
@@ -45,14 +45,14 @@ class GuessWho:
 
     _player_turn: bool
 
-    def __init__(self, player_character: Character, ai_character: Character, tree: GuessTree,
-                 dataset: dict[str, Character], features: set[str], player_turn: bool = True) -> None:
+    def __init__(self, player: Player, ai: AIPlayer, dataset: dict[str, Character], features: set[str],
+                 player_turn: bool = True) -> None:
 
         self.dataset = dataset
         self.features = features
 
-        self.player = Player(player_character)
-        self.ai = AIPlayer(ai_character, tree)
+        self.player = player
+        self.ai = ai
 
         self._winner = None
 
@@ -89,6 +89,7 @@ class GuessWho:
             else:
                 # Return whether the AI's character has the feature
                 return_value = self.ai.get_character().has_feature(guess)
+                self.features.remove(guess)
 
         # Else, treat it as the AI's turn
         else:
@@ -124,6 +125,7 @@ class GuessWho:
         """
         return self._winner
 
+
 class Player:
     """ An abstract class representing a player in a game of Guess Who."""
 
@@ -137,15 +139,15 @@ class Player:
         """Return the character that this player has chosen."""
         return self._character
 
-    def make_guess(self, game: GuessWho) -> None:
+    def make_guess(self, game: GuessWho) -> str:
         """Make a move in the given game of Guess Who.
         Preconditions:
             - game.is_player_turn()
         """
 
         # Print available features and characters, then ask the player to make a guess
-        print(f'Available features to ask about: {game.features}\n-----------------')
-        print(f'Characters: {game.dataset.keys()}\n-----------------')
+        print(f'Available features to ask about: {game.features}\n')
+        print(f'Characters: {list(game.dataset.keys())}\n-----------------')
 
         # Ask the player to make a valid guess
         guess = ''
@@ -161,12 +163,15 @@ class Player:
         has_feature = game.record_move(guess)
 
         # Print the result of the guess
-        if guess in game.features:
-            print(f'The character has the {guess} feature!' if has_feature else f'The character does not have the {guess} feature.')
+        if guess in game.dataset:
+            print('You correctly guessed the character!\n' if has_feature else 'That is not the correct character.\n')
         else:
-            print('You correctly guessed the character!' if has_feature else 'That is not the correct character.')
+            print(
+                f'The character has the {guess} feature!\n' if has_feature else f'The character does not have the {guess} feature.\n')
 
-        print('=================')
+        print('==================================\n')
+
+        return guess
 
 
 class AIPlayer(Player):
@@ -179,7 +184,7 @@ class AIPlayer(Player):
         super().__init__(character)
         self.tree = tree
 
-    def make_guess(self, game: GuessWho) -> None:
+    def make_guess(self, game: GuessWho) -> str:
         """Make a move in the given game of Guess Who.
         Preconditions:
             - not game.is_player_turn()
@@ -191,4 +196,6 @@ class AIPlayer(Player):
         has_feature = game.record_move(guess)
 
         # Update the tree given the whether the player's character has the feature
-        self.tree.traverse_tree(has_feature)
+        self.tree = self.tree.traverse_tree(has_feature)
+
+        return guess
