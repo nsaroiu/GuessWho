@@ -31,6 +31,49 @@ def load_screen() -> tuple[pygame.Surface, float, float]:
     return screen, info.current_w, info.current_h
 
 
+def pick_algorithm(screen: pygame.Surface, width: float, height: float) -> str:
+    """Picks an algorithm for the AI to use.
+    """
+    clock = pygame.time.Clock()
+    running = True
+    dt = 0
+    font = pygame.font.SysFont("Arial", 36)
+    white = (255, 255, 255)
+
+    button_dict = {}
+    algorithm_list = ['CART', 'ID3', 'C4.5', 'Chi-squared', 'variance']
+    count = 0
+
+    for algorithm in algorithm_list:
+        button_dict[algorithm] = TextButton(algorithm, (width / 2, height / 2 + 50 * count))
+        count += 1
+
+    while running:
+        # poll for events
+        # pygame.QUIT event means the user clicked X to close your window
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                for button in button_dict:
+                    if button_dict[button].on_click(event):
+                        return button_dict[button].text
+
+        screen.fill("purple")
+
+        for button in button_dict:
+            txtsurf = font.render(button_dict[button].text, True, white)
+            screen.blit(txtsurf, button_dict[button].rect)
+        pygame.display.flip()
+
+        # limits FPS to 60
+        # dt is delta time in seconds since last frame, used for framerate-
+        # independent physics.
+        dt = clock.tick(60) / 1000
+
+    pygame.quit()
+
+
 def pick_character(screen: pygame.Surface, width: float, height: float, dataset: dict[str, Character]) -> \
         tuple[Character, dict[str, Button]]:
     """Picks a character for the player.
@@ -69,7 +112,6 @@ def pick_character(screen: pygame.Surface, width: float, height: float, dataset:
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                print(event.pos)
                 for button in button_dict:
                     if button_dict[button].on_click(event):
                         return dataset[button_dict[button].character], button_dict
@@ -179,6 +221,7 @@ def load_characters(game_state: guesswho.GuessWho, screen: pygame.Surface, width
 
         input_rect.w = max(235, txtsurf.get_width() + 10)
         # flip() the display to put your work on screen
+
         pygame.display.flip()
 
         # limits FPS to 60
@@ -205,6 +248,21 @@ class Button:
         return False
 
 
+class TextButton:
+    """A button that can be clicked on."""
+
+    def __init__(self, text: str, position: tuple) -> None:
+        self.text = text
+        self.rect = pygame.Rect(position[0], position[1], 100, 50)
+
+    def on_click(self, event) -> bool:
+        """return True if the button is clicked."""
+        if event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
+
+
 def load_character(char_stat: bool, screen: pygame.surface, char_dict: dict[str, pygame.image],
                    character: str, width: float, height: float) -> None:
     """Load the character image onto the screen.
@@ -218,4 +276,5 @@ def load_character(char_stat: bool, screen: pygame.surface, char_dict: dict[str,
 if __name__ == '__main__':
     pass
     screen, width, height = load_screen()
-    load_characters('', screen, width, height, {}, 'alex')
+    pick_algorithm(screen, width, height)
+    # load_characters('', screen, width, height, {}, 'alex')
