@@ -42,11 +42,11 @@ def pick_algorithm(screen: pygame.Surface, width: float, height: float) -> str:
 
     button_dict = {}
     algorithm_list = ['CART', 'ID3', 'C4.5', 'Chi-squared', 'variance']
-    count = 0
+    total_height = len(algorithm_list) * 50  # calculate total height of all buttons
 
-    for algorithm in algorithm_list:
-        button_dict[algorithm] = TextButton(algorithm, (width / 2, height / 2 + 50 * count))
-        count += 1
+    for i, algorithm in enumerate(algorithm_list):
+        # center the button horizontally and offset the y position
+        button_dict[algorithm] = TextButton(algorithm, (width / 2 - 100, (height / 2 - total_height / 2) + 50 * i))
 
     while running:
         # poll for events
@@ -64,6 +64,9 @@ def pick_algorithm(screen: pygame.Surface, width: float, height: float) -> str:
         for button in button_dict:
             txtsurf = font.render(button_dict[button].text, True, white)
             screen.blit(txtsurf, button_dict[button].rect)
+
+        txtsurf = font.render("Choose your algorithm", True, white)
+        screen.blit(txtsurf, (width / 4 + 150, height * 1 / 4))
         pygame.display.flip()
 
         # limits FPS to 60
@@ -276,5 +279,6 @@ def load_character(char_stat: bool, screen: pygame.surface, char_dict: dict[str,
 if __name__ == '__main__':
     pass
     screen, width, height = load_screen()
-    pick_algorithm(screen, width, height)
-    # load_characters('', screen, width, height, {}, 'alex')
+    str = pick_algorithm(screen, width, height)
+    print(str)
+    load_characters('', screen, width, height, {}, 'alex')
