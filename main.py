@@ -3,6 +3,7 @@ import data
 from character import Character
 import random
 from GuessTree import GuessTree
+import Game
 
 
 def run_game() -> None:
@@ -77,6 +78,52 @@ def run_game() -> None:
             f'The AI has correctly guessed your character and has won the game. Better luck next time!\n\nThe AI\'s character was: {game.ai.get_character().name}')
 
 
+def run_visualization():
+    """Run a visualization of a game of Guess Who.
+    """
+    with open('./data/guess_who.csv') as file:
+        features = file.readline().split(',')[:-1]
+        dataset = {}  # Dictionary mapping character names to character objects
+        character_list = []  # List of character objects
+        screen, width, height = Game.load_screen()
+        algorithm = Game.pick_algorithm(screen, width, height)
+        tree_file = './data/' + algorithm + '_tree.pkl'
+        tree = GuessTree.read_guess_tree(tree_file)
+
+        for line in file:
+            line = line.split(',')
+
+            # Get a list of the character's corresponding features as ints
+            character_features_int = line[:-1]
+
+            # Get the character name
+            character_name = line.pop()[:-1]
+
+            # Convert the list of ints to a list of booleans
+            character_features_bool = [True if feature == '1' else False for feature in character_features_int]
+
+            # Create a dictionary of the character's features mapping the feature name to the boolean value
+            character_features = {}
+            for i in range(len(features)):
+                character_features[features[i]] = character_features_bool[i]
+
+            # Create character object
+            character = Character(character_name, character_features)
+
+            # Add the character to the dataset
+            dataset[character_name] = character
+            character_list.append(character)
+
+    chosen_player_character, button_dict = Game.pick_character(screen, width, height, dataset)
+    player = Player(chosen_player_character)
+    ai = AIPlayer(random.choice(character_list), tree)
+
+    # Initialize the game
+    game = GuessWho(player, ai, dataset, set(features))
+    winner = Game.load_characters(game, screen, width, height, button_dict, chosen_player_character.name)
+    Game.winner_screen(screen, width, height, winner)
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    run_game()
+    run_visualization()

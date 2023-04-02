@@ -125,6 +125,11 @@ class GuessWho:
         """
         return self._winner
 
+    def is_character_guess(self, guess: str) -> bool:
+        """Return whether the given guess is a character guess.
+        """
+        return guess in self.dataset
+
 
 class Player:
     """ An abstract class representing a player in a game of Guess Who."""
@@ -139,25 +144,16 @@ class Player:
         """Return the character that this player has chosen."""
         return self._character
 
-    def make_guess(self, game: GuessWho) -> str:
+    def make_guess(self, game: GuessWho, guess: str) -> bool:
         """Make a move in the given game of Guess Who.
         Preconditions:
             - game.is_player_turn()
+            - game.valid_guess(guess)
         """
 
         # Print available features and characters, then ask the player to make a guess
         print(f'Available features to ask about: {game.features}\n')
         print(f'Characters: {list(game.dataset.keys())}\n-----------------')
-
-        # Ask the player to make a valid guess
-        guess = ''
-        while not game.valid_guess(guess):
-            guess = input("Make a character guess or ask about a feature (case-sensitive): ")
-
-            if not game.valid_guess(guess):
-                print('Invalid feature or character name. Please enter a valid feature or character name.')
-
-            print('-----------------')
 
         # Record the guess in the game
         has_feature = game.record_move(guess)
@@ -171,7 +167,7 @@ class Player:
 
         print('==================================\n')
 
-        return guess
+        return has_feature
 
 
 class AIPlayer(Player):
