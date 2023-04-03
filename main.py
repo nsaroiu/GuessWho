@@ -1,3 +1,12 @@
+"""Copyright and Usage Information
+===============================
+Copyright (c) 2023 Prashanth Shyamala and Nicholas Saroiu
+All Rights Reserved.
+This program is the property of Prashanth Shyamala and Nicholas Saroiu.
+All forms of distribution of this code, whether as given or with any changes,
+are expressly prohibited.
+For more information on copyright for CSC111 materials, please consult our Course Syllabus.
+"""
 from guesswho import GuessWho, Player, AIPlayer
 from character import Character
 import random
@@ -133,6 +142,8 @@ def run_visualization() -> None:
 
 
 def tree_data() -> None:
+    """Print data about the trees.
+    """
     algorithms = ['ID3', 'CART', 'C4.5', 'Chi-squared', 'variance']
 
     trees = [GuessTree.read_guess_tree('./data/' + algorithm + '_tree.pkl') for algorithm in algorithms]

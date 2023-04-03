@@ -8,15 +8,11 @@ are expressly prohibited.
 For more information on copyright for CSC111 materials, please consult our Course Syllabus.
 """
 from __future__ import annotations
-from collections.abc import Callable
-from typing import Any, Optional
-import pandas as pd
-import numpy as np
+from typing import Optional
 import pygame
 from character import Character
-import player
-from GuessTree import GuessTree
 import guesswho
+import doctest
 
 
 def load_screen() -> tuple[pygame.Surface, float, float]:
@@ -94,7 +90,6 @@ def pick_algorithm(screen: pygame.Surface, width: float, height: float) -> str:
 
     button_dict = {}
     algorithm_list = ['CART', 'ID3', 'C4.5', 'Chi-squared', 'variance']
-    total_height = len(algorithm_list) * 50  # calculate total height of all buttons
 
     for i, algorithm in enumerate(algorithm_list):
         # center the button horizontally and offset the y position
@@ -366,7 +361,18 @@ def winner_screen(screen: pygame.Surface, width: float, height: float, winner: b
 
 
 class Button:
-    """A button that can be clicked on."""
+    """A button that can be clicked on.
+
+    Instance Attributes:
+        - image: the image of the button
+        - rect: the rectangle of the button
+        - character: the character that the button represents
+
+    Representation Invariants:
+        - self.image is not None
+        - self.rect is not None
+
+    """
 
     def __init__(self, image: pygame.image, position: tuple, character: Optional[str] = None) -> None:
         self.image = image
@@ -382,7 +388,16 @@ class Button:
 
 
 class TextButton:
-    """A button that can be clicked on."""
+    """A button that can be clicked on.
+
+    Instance Attributes:
+        - text: the text of the button
+        - rect: the rectangle of the button
+
+    Representation Invariants:
+        - self.text is not None
+        - self.rect is not None
+    """
 
     def __init__(self, text: str, position: tuple) -> None:
         self.text = text
@@ -420,6 +435,4 @@ def load_character(char_stat: bool, screen: pygame.surface, char_dict: dict[str,
 
 
 if __name__ == '__main__':
-    pass
-    screen, width, height = load_screen()
-    rules_screen(screen, width, height)
+    doctest.testmod()

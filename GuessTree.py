@@ -12,6 +12,7 @@ from typing import Any, Optional
 import pickle
 import pandas as pd
 import numpy as np
+import doctest
 
 from python_ta.contracts import check_contracts
 
@@ -56,7 +57,7 @@ class GuessTree:
 
     def __init__(self, left: Optional[GuessTree] = None, right: Optional[GuessTree] = None,
                  feature_ind: Optional[int] = None, feature: Optional[str] = None,
-                 threshold: Optional[float] = None, info_gain: Optional[float] = None, value: Optional[float] = None,
+                 threshold: Optional[float] = None, info_gain: Optional[float] = None, value: Optional[str] = None,
                  node_type: str = 'decision', algorithm: str = 'CART') -> None:
         """Initializes a new GuessTree.
 
@@ -369,4 +370,4 @@ def tree_runner(file_name: str) -> list[GuessTree]:
 
 if __name__ == '__main__':
     # tree_runner('data/guess_who.csv')
-    pass
+    doctest.testmod()
