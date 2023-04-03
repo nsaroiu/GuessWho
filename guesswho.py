@@ -187,8 +187,10 @@ class AIPlayer(Player):
         """
         # Get the guess from the tree. Optimized where if either branch of the tree is a leaf, the guess is the leaf's
         # value.
+        negate = False
         if not self.tree.is_leaf() and self.tree.get_left().is_leaf():
             guess = self.tree.get_left().get_guess()
+            negate = True
         elif not self.tree.is_leaf() and self.tree.get_right().is_leaf():
             guess = self.tree.get_right().get_guess()
         else:
@@ -196,6 +198,7 @@ class AIPlayer(Player):
 
         # Record the guess
         has_feature = game.record_move(guess)
+        has_feature = not has_feature if negate else has_feature
 
         # Update the tree given the whether the player's character has the feature
         self.tree = self.tree.traverse_tree(has_feature)

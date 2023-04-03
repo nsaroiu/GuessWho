@@ -126,6 +126,7 @@ def run_visualization() -> None:
     winner = Game.load_characters(game, screen, width, height, button_dict, chosen_player_character.name)
     Game.winner_screen(screen, width, height, winner)
 
+
 def tree_data() -> None:
     algorithms = ['C4.5', 'CART', 'Chi-squared', 'ID3', 'variance']
 
@@ -141,7 +142,8 @@ def tree_data() -> None:
     tree_average_heights = {algorithm: sum(tree_leaf_heights[algorithm]) / 24 for algorithm in algorithms}
 
     # Average height of each leaf in each tree if using optimized guessing
-    tree_average_optimized_heights = {algorithms[i]: trees[i].sum_optimized_heights() / 24 for i in range(len(algorithms))}
+    tree_average_optimized_heights = {algorithms[i]: trees[i].sum_optimized_heights() / 24 for i in
+                                      range(len(algorithms))}
 
     print('-----------------')
     for algorithm in algorithms:
@@ -151,10 +153,10 @@ def tree_data() -> None:
         print(f'{algorithm} tree average optimized leaf height: {tree_average_optimized_heights[algorithm]}')
         print('-----------------')
 
-    #print(trees[3])
+    # print(trees[3])
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    #run_visualization()
-    tree_data()
+    run_visualization()
+    # tree_data()
