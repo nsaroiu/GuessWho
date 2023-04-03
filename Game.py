@@ -29,6 +29,60 @@ def load_screen() -> tuple[pygame.Surface, float, float]:
     return screen, info.current_w, info.current_h
 
 
+def rules_screen(screen: pygame.Surface, width: float, height: float) -> None:
+    """Loads the rules screen.
+    """
+    clock = pygame.time.Clock()
+    running = True
+    dt = 0
+    font = pygame.font.SysFont("Arial", 36)
+    white = (255, 255, 255)
+
+    while running:
+        # poll for events
+        # pygame.QUIT event means the user clicked X to close your window
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                return  # return to main menu
+
+        screen.fill("purple")
+
+        txtsurf = font.render("The rules of Guess Who are simple.", True, white)
+        screen.blit(txtsurf, (width / 2 - len("The rules of Guess Who are simple.") * 12 / 2, height / 2 - 300))
+
+        txtsurf = font.render("You will be given a character, and you will have to guess who it is.", True, white)
+        screen.blit(txtsurf, (
+            width / 2 - len("You will be given a character, and you will have to guess who it is.") * 12 / 2,
+            height / 2 - 250))
+
+        txtsurf = font.render(
+            "You will be given a list of features, and you will have to ask questions to narrow down the list.", True,
+            white)
+        screen.blit(txtsurf, (width / 2 - len(
+            "You will be given a list of features, and you will have to ask questions to narrow down the list.") * 12 / 2,
+                              height / 2 - 200))
+
+        txtsurf = font.render("You are expected to type only the given features or a character name (all lowercase)",
+                              True, white)
+        screen.blit(txtsurf, (width / 2 - len(
+            "You are expected to type only the given features or a character name (all lowercase)") * 12 / 2,
+                              height / 2 - 150))
+
+        txtsurf = font.render("Click anywhere to continue.", True, white)
+        screen.blit(txtsurf, (width / 2 - len("Click anywhere to continue.") * 12 / 2, height / 2 - 100))
+
+        pygame.display.flip()
+
+        # limits FPS to 60
+        # dt is delta time in seconds since last frame, used for framerate-
+        # independent physics.
+        dt = clock.tick(60) / 1000
+
+    pygame.quit()
+
+
 def pick_algorithm(screen: pygame.Surface, width: float, height: float) -> str:
     """Picks an algorithm for the AI to use.
     """
@@ -170,11 +224,8 @@ def load_characters(game: guesswho.GuessWho, screen: pygame.Surface, width: floa
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window
         if game.get_winner() is game.player:
-            print('Congratulations! You have won the game!')
             return True
         elif game.get_winner() is game.ai:
-            print(
-                f'The AI has correctly guessed your character and has won the game. Better luck next time!\n\nThe AI\'s character was: {game.ai.get_character().name}')
             return False
 
         for event in pygame.event.get():
@@ -195,34 +246,22 @@ def load_characters(game: guesswho.GuessWho, screen: pygame.Surface, width: floa
                             result = game.player.make_guess(game, user_text)
                             if game.is_character_guess(user_text):
                                 if result:
-                                    print(
-                                        f'You have correctly guessed the AI\'s character: {user_text}.\n\n==================================\n')
+                                    pass
                                 else:
-                                    print(
-                                        f'You have incorrectly guessed the AI\'s character: {user_text}.\n\n==================================\n')
                                     message1 = f'You have incorrectly guessed the AI\'s character: {user_text}'
                             else:
                                 if result:
-                                    print(
-                                        f'The AI\'s character has the {user_text} feature!\n\n==================================\n')
                                     message1 = f'The AI\'s character has the {user_text} feature!'
                                 else:
-                                    print(
-                                        f'The AI\'s character does not have the {user_text} feature.\n\n==================================\n')
                                     message1 = f'The AI\'s character does not have the {user_text} feature'
                             user_text = ''
                             if game.get_winner() is None:
                                 guess = game.ai.make_guess(game)
                                 if game.is_character_guess(guess):
-                                    print(
-                                        f'The AI has guessed that your character is: {guess}.\n\n==================================\n')
                                     message2 = f'The AI has guessed that your character is: {guess}'
                                 else:
-                                    print(
-                                        f'The AI has asked about the {guess} feature.\n\n==================================\n')
                                     message2 = f'The AI has asked about the {guess} feature'
                         else:
-                            print('Invalid guess. Please try again.')
                             message1 = 'Invalid guess. Please try again.'
                     elif event.key == pygame.K_BACKSPACE:
                         user_text = user_text[:-1]
@@ -257,9 +296,9 @@ def load_characters(game: guesswho.GuessWho, screen: pygame.Surface, width: floa
         input_rect.w = max(235, txtsurf.get_width() + 10)
 
         if message1 is not None:
-            load_message(screen, width, height, message1, 450, 150)
+            load_message(screen, width, height, message1, 400, 150)
         if message2 is not None:
-            load_message(screen, width, height, message2, 450, 170)
+            load_message(screen, width, height, message2, 400, 170)
         # flip() the display to put your work on screen
 
         features = list(game.features)
@@ -278,9 +317,10 @@ def load_characters(game: guesswho.GuessWho, screen: pygame.Surface, width: floa
         message_list[i] = message_list[i][:-2]
 
         count = 0
-        load_message(screen, width, height, 'Available Features to ask about:', -318, 100 + count * 20, 'red')
+        load_message(screen, width, height, 'Available Features to ask about:', -width / 4 - 50, 100 + count * 20,
+                     'red')
         for message in message_list:
-            load_message(screen, width, height, message, -318, 120 + count * 30)
+            load_message(screen, width, height, message, -width / 4 - 50, 120 + count * 30)
             count += 1
         pygame.display.flip()
 
@@ -301,7 +341,6 @@ def winner_screen(screen: pygame.Surface, width: float, height: float, winner: b
 
     if winner:
         text = 'Congratulations! You have won the game!'
-        txtsurf = base_font.render(text, True, (255, 255, 255))
         file = 'images/dog_smile.png'
         img = pygame.image.load(file).convert()
         image_size = (img.get_width() / 2, img.get_height() / 2)
@@ -311,7 +350,6 @@ def winner_screen(screen: pygame.Surface, width: float, height: float, winner: b
         file = 'images/terminator.png'
         img = pygame.image.load(file).convert()
         text = 'The AI has correctly guessed your character and has won the game. Better luck next time!'
-        txtsurf = base_font.render(text, True, (255, 255, 255))
         image_size = (img.get_width() / 2, img.get_height() / 2)
         # img = pygame.transform.scale(img, image_size)
 
@@ -320,7 +358,7 @@ def winner_screen(screen: pygame.Surface, width: float, height: float, winner: b
             if event.type == pygame.QUIT:
                 running = False
         screen.fill("purple")
-        screen.blit(txtsurf, (width / 2 - len(text) * 12 / 2, height / 2 + 20))
+        load_message(screen, width, height, text, 0, 50)
         screen.blit(img, (width / 2 - img.get_width() / 2, height / 2 - 350))
 
         pygame.display.flip()
@@ -368,7 +406,7 @@ def load_message(screen: pygame.surface, width: float, height: float, message: s
     else:
         text_colour = (255, 255, 255)
     txtsurf = base_font.render(message, True, text_colour)
-    screen.blit(txtsurf, (width / 2 - len(message) * 12 / 2 + add_width, height / 2 + add_height))
+    screen.blit(txtsurf, (width / 2 - len(message) * 10 / 2 + add_width, height / 2 + add_height))
 
 
 def load_character(char_stat: bool, screen: pygame.surface, char_dict: dict[str, pygame.image],
@@ -384,4 +422,4 @@ def load_character(char_stat: bool, screen: pygame.surface, char_dict: dict[str,
 if __name__ == '__main__':
     pass
     screen, width, height = load_screen()
-    winner_screen(screen, width, height, False)
+    rules_screen(screen, width, height)

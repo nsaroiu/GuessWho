@@ -85,7 +85,10 @@ def run_visualization():
         features = file.readline().split(',')[:-1]
         dataset = {}  # Dictionary mapping character names to character objects
         character_list = []  # List of character objects
+
         screen, width, height = Game.load_screen()
+        Game.rules_screen(screen, width, height)
+
         algorithm = Game.pick_algorithm(screen, width, height)
         tree_file = './data/' + algorithm + '_tree.pkl'
         tree = GuessTree.read_guess_tree(tree_file)
