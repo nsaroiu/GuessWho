@@ -1,9 +1,14 @@
 from guesswho import GuessWho, Player, AIPlayer
-import data
 from character import Character
 import random
 from GuessTree import GuessTree
 import Game
+
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+import pandas as pd
+import statistics
 
 
 def run_game() -> None:
@@ -128,7 +133,7 @@ def run_visualization() -> None:
 
 
 def tree_data() -> None:
-    algorithms = ['C4.5', 'CART', 'Chi-squared', 'ID3', 'variance']
+    algorithms = ['ID3', 'CART', 'C4.5', 'Chi-squared', 'variance']
 
     trees = [GuessTree.read_guess_tree('./data/' + algorithm + '_tree.pkl') for algorithm in algorithms]
 
@@ -145,18 +150,42 @@ def tree_data() -> None:
     tree_average_optimized_heights = {algorithms[i]: trees[i].sum_optimized_heights() / 24 for i in
                                       range(len(algorithms))}
 
-    print('-----------------')
-    for algorithm in algorithms:
-        print(f'{algorithm} best_case height: {min(tree_leaf_heights[algorithm])}')
-        print(f'{algorithm} worst-case height: {tree_heights[algorithm]}')
-        print(f'{algorithm} tree average leaf height: {tree_average_heights[algorithm]}')
-        print(f'{algorithm} tree average optimized leaf height: {tree_average_optimized_heights[algorithm]}')
-        print('-----------------')
+    # Median height of the leaves in each tree
+    tree_median_leaf_heights = {algorithm: statistics.median(tree_leaf_heights[algorithm]) for algorithm in algorithms}
 
-    # print(trees[3])
+    # Mode height of the leaves in each tree
+    tree_mode_leaf_heights = {algorithm: statistics.mode(tree_leaf_heights[algorithm]) for algorithm in algorithms}
+
+    # Make three graphs that show the best and worst case leaf heights, the different average leaf heights, and compare
+    # mean leaf heights to optimized mean leaf heights
+    fig = make_subplots(rows=1, cols=3, subplot_titles=('Best Case Leaf Height vs Worst Case Leaf Height', 'Different Averages of Leaf Height', 'Mean Leaf Height vs Mean Optimized Leaf Height'), horizontal_spacing=0.075)
+
+    # Best vs Worst Case Leaf Height graph
+    fig.add_trace(go.Bar(name='Best Case Leaf Height', x=algorithms, y=[min(tree_leaf_heights[algorithm]) for algorithm in algorithms]), row=1, col=1)
+    fig.add_trace(go.Bar(name='Worst Case Leaf Height', x=algorithms, y=[tree_heights[algorithm] for algorithm in algorithms]), row=1, col=1)
+
+    # Different Averages of Leaf Height graph
+    fig.add_trace(go.Bar(name='Mean Leaf Height', x=algorithms, y=[tree_average_heights[algorithm] for algorithm in algorithms]), row=1, col=2)
+    fig.add_trace(go.Bar(name='Median Leaf Height', x=algorithms, y=[tree_median_leaf_heights[algorithm] for algorithm in algorithms]), row=1, col=2)
+    fig.add_trace(go.Bar(name='Mode Leaf Height', x=algorithms, y=[tree_mode_leaf_heights[algorithm] for algorithm in algorithms]), row=1, col=2)
+
+    # Mean Leaf Height vs Mean Optimized Leaf Height graph
+    fig.add_trace(go.Bar(name='Mean Leaf Height', x=algorithms, y=[tree_average_heights[algorithm] for algorithm in algorithms]), row=1, col=3)
+    fig.add_trace(go.Bar(name='Mean Optimized Leaf Height', x=algorithms, y=[tree_average_optimized_heights[algorithm] for algorithm in algorithms]), row=1, col=3)
+
+    # Set the titles of the axes and define the range of the y-axis for each graph
+    for i in range(1, 4):
+        fig['layout'][f'xaxis{i}']['title'] = 'Algorithm Name'
+        fig['layout'][f'yaxis{i}']['title'] = 'Leaf Height'
+        fig['layout'][f'yaxis{i}']['range'] = [0, 17]
+
+    # Set the margins of the graphs
+    fig['layout']['margin'] = dict(l=0, r=0, t=50, b=50)
+
+    fig.show()
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    run_visualization()
-    # tree_data()
+    #run_visualization()
+    tree_data()
