@@ -160,6 +160,29 @@ class GuessTree:
             heights_list.extend(right_heights)
             return heights_list
 
+    def get_left(self) -> GuessTree:
+        """Return the left subtree of this tree."""
+        return self._left
+
+    def get_right(self) -> GuessTree:
+        """Return the right subtree of this tree."""
+        return self._right
+
+    def is_leaf(self) -> bool:
+        """Return whether this node is a leaf node."""
+        return self._node_type == 'leaf'
+
+    def sum_optimized_heights(self, height: int = 0) -> int:
+        """Return the sum of the heights of the leaves of the tree if the tree is guessing optimized."""
+        if self.get_left().is_leaf() and self.get_right().is_leaf():
+            return height * 2 + 1
+        elif self.get_left().is_leaf() and not self.get_right().is_leaf():
+            return height + self.get_right().sum_optimized_heights(height + 1)
+        elif not self.get_left().is_leaf() and self.get_right().is_leaf():
+            return height + self.get_left().sum_optimized_heights(height + 1)
+        else:
+            return self._left.sum_optimized_heights(height + 1) + self._right.sum_optimized_heights(height + 1)
+
 
 @check_contracts
 class DecisionTreeGenerator:

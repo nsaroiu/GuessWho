@@ -78,7 +78,7 @@ def run_game() -> None:
             f'The AI has correctly guessed your character and has won the game. Better luck next time!\n\nThe AI\'s character was: {game.ai.get_character().name}')
 
 
-def run_visualization():
+def run_visualization() -> None:
     """Run a visualization of a game of Guess Who.
     """
     with open('./data/guess_who.csv') as file:
@@ -123,7 +123,35 @@ def run_visualization():
     winner = Game.load_characters(game, screen, width, height, button_dict, chosen_player_character.name)
     Game.winner_screen(screen, width, height, winner)
 
+def tree_data() -> None:
+    algorithms = ['C4.5', 'CART', 'Chi-squared', 'ID3', 'variance']
+
+    trees = [GuessTree.read_guess_tree('./data/' + algorithm + '_tree.pkl') for algorithm in algorithms]
+
+    # Height of each tree
+    tree_heights = {algorithms[i]: trees[i].get_height() for i in range(len(algorithms))}
+
+    # List of heights of each leaf in each tree
+    tree_leaf_heights = {algorithms[i]: trees[i].get_heights() for i in range(len(algorithms))}
+
+    # Average height of each leaf in each tree
+    tree_average_heights = {algorithm: sum(tree_leaf_heights[algorithm]) / 24 for algorithm in algorithms}
+
+    # Average height of each leaf in each tree if using optimized guessing
+    tree_average_optimized_heights = {algorithms[i]: trees[i].sum_optimized_heights() / 24 for i in range(len(algorithms))}
+
+    print('-----------------')
+    for algorithm in algorithms:
+        print(f'{algorithm} best_case height: {min(tree_leaf_heights[algorithm])}')
+        print(f'{algorithm} worst-case height: {tree_heights[algorithm]}')
+        print(f'{algorithm} tree average leaf height: {tree_average_heights[algorithm]}')
+        print(f'{algorithm} tree average optimized leaf height: {tree_average_optimized_heights[algorithm]}')
+        print('-----------------')
+
+    #print(trees[3])
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    run_visualization()
+    #run_visualization()
+    tree_data()

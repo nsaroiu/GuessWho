@@ -185,8 +185,14 @@ class AIPlayer(Player):
         Preconditions:
             - not game.is_player_turn()
         """
-        # Get the guess from the tree
-        guess = self.tree.get_guess()
+        # Get the guess from the tree. Optimized where if either branch of the tree is a leaf, the guess is the leaf's
+        # value.
+        if not self.tree.is_leaf() and self.tree.get_left().is_leaf():
+            guess = self.tree.get_left().get_guess()
+        elif not self.tree.is_leaf() and self.tree.get_right().is_leaf():
+            guess = self.tree.get_right().get_guess()
+        else:
+            guess = self.tree.get_guess()
 
         # Record the guess
         has_feature = game.record_move(guess)
