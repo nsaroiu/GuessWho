@@ -26,8 +26,8 @@ def run_visualization() -> None:
         dataset = {}  # Dictionary mapping character names to character objects
         character_list = []  # List of character objects
 
-        screen, width, height = Game.load_screen()
-        Game.rules_screen(screen, width, height)
+        screen, width, height = Game.load_screen()  # Load the screen
+        Game.rules_screen(screen, width, height)  # Display the rules screen
 
         algorithm = Game.pick_algorithm(screen, width, height)
         tree_file = './data/' + algorithm + '_tree.pkl'
@@ -95,20 +95,32 @@ def tree_data() -> None:
 
     # Make three graphs that show the best and worst case leaf heights, the different average leaf heights, and compare
     # mean leaf heights to optimized mean leaf heights
-    fig = make_subplots(rows=1, cols=3, subplot_titles=('Best Case Leaf Height vs Worst Case Leaf Height', 'Different Averages of Leaf Height', 'Mean Leaf Height vs Mean Optimized Leaf Height'), horizontal_spacing=0.075)
+    fig = make_subplots(rows=1, cols=3, subplot_titles=(
+    'Best Case Leaf Height vs Worst Case Leaf Height', 'Different Averages of Leaf Height',
+    'Mean Leaf Height vs Mean Optimized Leaf Height'), horizontal_spacing=0.075)
 
     # Best vs Worst Case Leaf Height graph
-    fig.add_trace(go.Bar(name='Best Case Leaf Height', x=algorithms, y=[min(tree_leaf_heights[algorithm]) for algorithm in algorithms]), row=1, col=1)
-    fig.add_trace(go.Bar(name='Worst Case Leaf Height', x=algorithms, y=[tree_heights[algorithm] for algorithm in algorithms]), row=1, col=1)
+    fig.add_trace(go.Bar(name='Best Case Leaf Height', x=algorithms,
+                         y=[min(tree_leaf_heights[algorithm]) for algorithm in algorithms]), row=1, col=1)
+    fig.add_trace(
+        go.Bar(name='Worst Case Leaf Height', x=algorithms, y=[tree_heights[algorithm] for algorithm in algorithms]),
+        row=1, col=1)
 
     # Different Averages of Leaf Height graph
-    fig.add_trace(go.Bar(name='Mean Leaf Height', x=algorithms, y=[tree_average_heights[algorithm] for algorithm in algorithms]), row=1, col=2)
-    fig.add_trace(go.Bar(name='Median Leaf Height', x=algorithms, y=[tree_median_leaf_heights[algorithm] for algorithm in algorithms]), row=1, col=2)
-    fig.add_trace(go.Bar(name='Mode Leaf Height', x=algorithms, y=[tree_mode_leaf_heights[algorithm] for algorithm in algorithms]), row=1, col=2)
+    fig.add_trace(
+        go.Bar(name='Mean Leaf Height', x=algorithms, y=[tree_average_heights[algorithm] for algorithm in algorithms]),
+        row=1, col=2)
+    fig.add_trace(go.Bar(name='Median Leaf Height', x=algorithms,
+                         y=[tree_median_leaf_heights[algorithm] for algorithm in algorithms]), row=1, col=2)
+    fig.add_trace(go.Bar(name='Mode Leaf Height', x=algorithms,
+                         y=[tree_mode_leaf_heights[algorithm] for algorithm in algorithms]), row=1, col=2)
 
     # Mean Leaf Height vs Mean Optimized Leaf Height graph
-    fig.add_trace(go.Bar(name='Mean Leaf Height', x=algorithms, y=[tree_average_heights[algorithm] for algorithm in algorithms]), row=1, col=3)
-    fig.add_trace(go.Bar(name='Mean Optimized Leaf Height', x=algorithms, y=[tree_average_optimized_heights[algorithm] for algorithm in algorithms]), row=1, col=3)
+    fig.add_trace(
+        go.Bar(name='Mean Leaf Height', x=algorithms, y=[tree_average_heights[algorithm] for algorithm in algorithms]),
+        row=1, col=3)
+    fig.add_trace(go.Bar(name='Mean Optimized Leaf Height', x=algorithms,
+                         y=[tree_average_optimized_heights[algorithm] for algorithm in algorithms]), row=1, col=3)
 
     # Set the titles of the axes and define the range of the y-axis for each graph
     for i in range(1, 4):
@@ -124,5 +136,5 @@ def tree_data() -> None:
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    #run_visualization()
+    # run_visualization()
     tree_data()

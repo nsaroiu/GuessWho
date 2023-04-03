@@ -9,11 +9,9 @@ For more information on copyright for CSC111 materials, please consult our Cours
 """
 from __future__ import annotations
 from typing import Any, Optional
-import pickle
-import pandas as pd
-import numpy as np
 from character import Character
 from GuessTree import GuessTree
+import doctest
 
 from python_ta.contracts import check_contracts
 
@@ -204,3 +202,7 @@ class AIPlayer(Player):
         self.tree = self.tree.traverse_tree(has_feature)
 
         return guess
+
+
+if __name__ == '__main__':
+    doctest.testmod()
