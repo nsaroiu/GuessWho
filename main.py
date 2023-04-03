@@ -136,5 +136,5 @@ def tree_data() -> None:
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # run_visualization()
-    tree_data()
+    run_visualization()
+    # tree_data()
